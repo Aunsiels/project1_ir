@@ -10,15 +10,16 @@ object RunClassification {
   def main(args: Array[String]) = {
            
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainSub/100"
+    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainSub/100"
+    val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
     val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
     println("Number of training documents: " + rcvStreamTraining.length)
     
-    val testFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/testSub"
+    val testFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/test"
     val rcvStreamTest = new ReutersRCVStream(testFiles, ".xml")
     //println("Number of test documents: " + rcvStreamTest.length)
     
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/10"
+    val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
     val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
     
