@@ -16,67 +16,76 @@ training 50000 documents
 vocabulary...
 
 
-|---|---|---|
+## Test table
+ | Tables        | Are           | Cool  |
+ |-------------|-------------|-----|
+ | col 3 is      | right-aligned | $1600 |
+ | col 2 is      | centered      |   $12 |
+ | zebra stripes | are neat      |    $1 |
+
+##The real table
+
+Reading the documents and observing the increase in vocabulary size.
+This is for the original tokenizer, no stemming, no stop words or number replacement.
+
 | read docs | voc size | available heap |
-|---|---|---|
-| 1000 | 20861 | heap: 149910 |
-|2000 | 29707 | heap: 166051 |
-|3000 | 36659 | heap: 155498 |
-|4000 | 42931 | heap: 142503 |
-|5000 | 48346 | heap: 131933 |
-|6000 | 52840 | heap: 121596 |
-|7000 | 57345 | heap: 191891 |
-|8000 | 61813 | heap: 192974 |
-|9000 | 66148 | heap: 167416 |
-|10000 | 70065 | heap: 141434 |
-|11000 | 74294 | heap: 196733 |
-|12000 | 78415 | heap: 171745 |
+|------:|-------:|-------:|
+| 1000 | 20861 | 149910 |
+|2000 | 29707 | 166051 |
+|3000 | 36659 | 155498 |
+|4000 | 42931 | 142503 |
+|5000 | 48346 | 131933 |
+|6000 | 52840 | 121596 |
+|7000 | 57345 | 191891 |
+|8000 | 61813 | 192974 |
+|9000 | 66148 | 167416 |
+|10000 | 70065 | 141434 |
+|11000 | 74294 | 196733 |
+|12000 | 78415 | 171745 |
+| 13000  |   82073 |  146268  |
+| 14000  |   86013 |  119736  |
+| 15000  |   89279 |  175841  |
+| 16000  |   92647 |  149793  |
+| 17000  |   95540 |  124922  |
+| 18000  |   98366 |  180381  |
+| 19000  |   101375 |  154141  |
+| 20000  |   104335 |  129404  |
+| 21000  |   107177 |  184507  |
+| 22000  |   110326 |  158726  |
+| 23000  |   113363 |  132881  |
+| 24000  |   116183 |  188498  |
+| 25000  |   119151 |  148931  |
+| 26000  |   121758 |  174895  |
+| 27000  |   124391 |  191069  |
+| 28000  |   127199 |  128469  |
+| 29000  |   129531 |  153628  |
+| 30000  |   131945 |  178551  |
+| 31000  |   134464 |  123357  |
+| 32000  |   138101 |  145311  |
+| 33000  |   140502 |  166330  |
+| 34000  |   142525 |  187026  |
+| 35000  |   144498 |  128659  |
+| 36000  |   146963 |  153738  |
+| 37000  |   149347 |  174354  |
+| 33000  |   140502 |  166330  |
+| 34000  |   142525 |  187026  |
+| 35000  |   144498 |  128659  |
+| 36000  |   146963 |  153738  |
+| 37000  |   149347 |  174354  |
+| 38000  |   151783 |  194387  |
+| 39000  |   154071 |  136037  |
+| 40000  |   156527 |  149290  |
+| 41000  |   158954 |  170126  |
+| 42000  |   161504 |  195295  |
+| 43000  |   163616 |  141198  |
+| 44000  |   165724 |  162107  |
+| 45000  |   167673 |  178479  |
+| 46000  |   169703 |  123988  |
+| 47000  |   171732 |  149216  |
+| 48000  |   173834 |  169875  |
+| 49000  |   176044 |  191224  |
+| 50000  |   178069 |  136238  |
 
-
-
-13000, voc.size 82073, heap: 146268
-14000, voc.size 86013, heap: 119736
-15000, voc.size 89279, heap: 175841
-16000, voc.size 92647, heap: 149793
-17000, voc.size 95540, heap: 124922
-18000, voc.size 98366, heap: 180381
-19000, voc.size 101375, heap: 154141
-20000, voc.size 104335, heap: 129404
-21000, voc.size 107177, heap: 184507
-22000, voc.size 110326, heap: 158726
-23000, voc.size 113363, heap: 132881
-24000, voc.size 116183, heap: 188498
-25000, voc.size 119151, heap: 148931
-26000, voc.size 121758, heap: 174895
-27000, voc.size 124391, heap: 191069
-28000, voc.size 127199, heap: 128469
-29000, voc.size 129531, heap: 153628
-30000, voc.size 131945, heap: 178551
-31000, voc.size 134464, heap: 123357
-32000, voc.size 138101, heap: 145311
-33000, voc.size 140502, heap: 166330
-34000, voc.size 142525, heap: 187026
-35000, voc.size 144498, heap: 128659
-36000, voc.size 146963, heap: 153738
-37000, voc.size 149347, heap: 174354
-33000, voc.size 140502, heap: 166330
-34000, voc.size 142525, heap: 187026
-35000, voc.size 144498, heap: 128659
-36000, voc.size 146963, heap: 153738
-37000, voc.size 149347, heap: 174354
-38000, voc.size 151783, heap: 194387
-39000, voc.size 154071, heap: 136037
-40000, voc.size 156527, heap: 149290
-41000, voc.size 158954, heap: 170126
-42000, voc.size 161504, heap: 195295
-43000, voc.size 163616, heap: 141198
-44000, voc.size 165724, heap: 162107
-45000, voc.size 167673, heap: 178479
-46000, voc.size 169703, heap: 123988
-47000, voc.size 171732, heap: 149216
-48000, voc.size 173834, heap: 169875
-49000, voc.size 176044, heap: 191224
-50000, voc.size 178069, heap: 136238
 
 
 /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/bin/java -Didea.launcher.port=7532 "-Didea.launcher.bin.path=/Applications/IntelliJ IDEA CE.app/Contents/bin" -Dfile.encoding=UTF-8 -classpath "/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/deploy.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/cldrdata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/dnsns.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/jfxrt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/localedata.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/nashorn.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/sunec.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/sunjce_provider.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/sunpkcs11.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/ext/zipfs.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/javaws.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/jfxswt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/management-agent.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/plugin.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/ant-javafx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/dt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/javafx-mx.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/jconsole.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/packager.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/sa-jdi.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/lib/tools.jar:/Users/mmgreiner/Projects/InformationRetrieval/out/production/Scoring:/Users/mmgreiner/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.5.jar:/Users/mmgreiner/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.5.jar:/Users/mmgreiner/Projects/InformationRetrieval/libs/tinyir.jar:/Users/mmgreiner/Projects/InformationRetrieval/libs/gson-2.8.0.jar:/Applications/IntelliJ IDEA CE.app/Contents/lib/idea_rt.jar" com.intellij.rt.execution.application.AppMain Classifier
