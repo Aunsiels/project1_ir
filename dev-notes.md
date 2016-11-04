@@ -9,21 +9,7 @@ These are notes taking during the development of the Exercise 1 of the class Inf
 We are training on 50'000 documents. 
 When reading the documents, we need to assemble the total vocabulary.
 
-These are the results of reading all those files:
-
-training 50000 documents
-	88 secs, or 1.4666666666666666 minutes
-vocabulary...
-
-
-## Test table
- | Tables        | Are           | Cool  |
- |-------------|-------------|-----|
- | col 3 is      | right-aligned | $1600 |
- | col 2 is      | centered      |   $12 |
- | zebra stripes | are neat      |    $1 |
-
-##The real table
+### Vocabulary size and documents
 
 Reading the documents and observing the increase in vocabulary size.
 This is for the original tokenizer, no stemming, no stop words or number replacement.
@@ -88,8 +74,7 @@ This is for the original tokenizer, no stemming, no stop words or number replace
 
 
 
-
-## Changing SBT Heap size
+## Changing Heap size
 
 I found this [hint](http://stackoverflow.com/questions/15280839/how-to-set-heap-size-for-sbt)
 
