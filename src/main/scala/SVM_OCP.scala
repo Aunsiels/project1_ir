@@ -4,6 +4,7 @@
 
 import breeze.linalg._
 import math._
+import scala.util.Random
 
 class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
 
@@ -13,12 +14,13 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
     }
 
     var currentTime = 1
+    val random = new Random
 
     def train(examples : Array[DataPoint]): Unit ={
-        for (t <- 0 until examples.length){
+        for (t <- examples.indices){
             val x = examples(t).input
             for (currentClass <- 0 until nClasses){
-                val y = if (examples(t).output.contains(currentClass)) 1 else -1
+                val y = if (examples(t).output.contains(currentClass)) 1.0 else -1.0
                 if (y * (weights(currentClass).t * x) < 1){
                     val w_temp = weights(currentClass) + 1.0 / sqrt(t + currentTime + 1) * y * x
                     weights(currentClass) = w_temp * math.min(1.0, 1.0 / sqrt(lambda) / norm(w_temp))
@@ -26,6 +28,28 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
             }
         }
         currentTime += examples.length
+    }
+
+    def trainPegasos(examples : Array[DataPoint], timesteps : Int, batchSize : Int) = {
+        for (t <- 1 to timesteps){
+            for (currentClass <- 0 until nClasses) {
+                var wPos = DenseVector.zeros[Double](dimInput)
+                for (s <- 0 until batchSize) {
+                    val dataSample = examples(random.nextInt(examples.length))
+                    val x = dataSample.input
+                    val y = if (dataSample.output.contains(currentClass)) 1.0 else -1.0
+                    if (y * (weights(currentClass).t * x) < 1){
+                        wPos = wPos + (y * x)
+                    }
+                }
+                val eta = 1.0 / lambda / (t + currentTime)
+                weights(currentClass) = (1.0 - eta * lambda) * weights(currentClass) +
+                                        eta / batchSize * wPos
+                weights(currentClass) = math.min(1.0, 1.0 / sqrt(lambda) / norm(weights(currentClass))) *
+                                            weights(currentClass)
+            }
+        }
+        currentTime += timesteps
     }
 
     def predict(input : DenseVector[Double]) : Set[Int] = {
@@ -81,8 +105,9 @@ object SVM_OCP {
         out += 0
         training(3) = DataPoint(x, out)
 
-        for (i <- 0 until 1000)
-          svm.train(training)
+        //for (i <- 0 until 1000)
+        //  svm.train(training)
+        svm.trainPegasos(training, 5, 2)
 
         x = DenseVector.zeros[Double](2)
         x(0) = 2
