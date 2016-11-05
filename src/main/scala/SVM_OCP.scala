@@ -55,6 +55,7 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
     def predict(input : DenseVector[Double]) : Set[Int] = {
         var sClasses = Set[Int]()
         for (currentClass <- 0 until nClasses){
+            // Should I compare with 0 or 1 ?
             if (weights(currentClass).t * input >= 0){
                 sClasses += currentClass
             }
@@ -73,55 +74,49 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
 }
 
 object SVM_OCP {
+    val random = new Random()
     def main(args : Array[String]): Unit = {
-        val svm = new SVM_OCP(1.0, 2, 2)
-        val training = new Array[DataPoint](4)
 
-        var x = DenseVector.zeros[Double](2)
-        var out = Set[Int]()
-        x(0) = 1
-        x(1) = 1
-        out += 1
-        training(0) = DataPoint(x, out)
+        val svm = new SVM_OCP(0.01, 3, 2)
+        val sizeTraining = 100000
+        val sizeTest = 1000
+        val training = new Array[DataPoint](sizeTraining)
 
-        x = DenseVector.zeros[Double](2)
-        out = Set[Int]()
-        x(0) = 2
-        x(1) = 1
-        out += 1
-        training(1) = DataPoint(x, out)
+        for (i <- training.indices) {
+            val x = DenseVector.zeros[Double](3)
+            var out = Set[Int]()
+            x(0) = random.nextInt(200) - 100
+            // Bias
+            x(2) = 1
+            if (i < sizeTraining / 2) {
+                x(1) = 1 + random.nextInt(10) + 10
+                out += 1
+            } else {
+                x(1) = -1 - random.nextInt(10) + 10
+                out += 0
+            }
+            training(i) = DataPoint(x, out)
+        }
 
-        x = DenseVector.zeros[Double](2)
-        out = Set[Int]()
-        x(0) = 1
-        x(1) = -1
-        out += 0
-        training(2) = DataPoint(x, out)
+        svm.trainPegasos(training, 100000, 10)
 
-        x = DenseVector.zeros[Double](2)
-        out = Set[Int]()
-        x(0) = 2
-        x(1) = -1
-        out += 0
-        training(3) = DataPoint(x, out)
-
-        //for (i <- 0 until 1000)
-        //  svm.train(training)
-        svm.trainPegasos(training, 5, 2)
-
-        x = DenseVector.zeros[Double](2)
-        x(0) = 2
-        x(1) = -2
-        println(svm.predict(x))
-
-        x = DenseVector.zeros[Double](2)
-        x(0) = 2
-        x(1) = 2
-        println(svm.predict(x))
-
-        x = DenseVector.zeros[Double](2)
-        x(0) = 2
-        x(1) = 1
-        println(svm.predict(x))
+        var truePredict = 0.0
+        for (i <- 0 until sizeTest) {
+            val x = DenseVector.zeros[Double](3)
+            x(0) = random.nextInt(200) - 100
+            x(2) = 1
+            if (i < sizeTest / 2) {
+                x(1) = 1 + random.nextInt(10) + 10
+                val prediction = svm.predict(x)
+                if (prediction.contains(1) && !prediction.contains(0)) truePredict += 1
+            } else {
+                x(1) = -1 - random.nextInt(10) + 10
+                val prediction = svm.predict(x)
+                if (prediction.contains(0) && !prediction.contains(1)) truePredict += 1
+            }
+        }
+        println("Accuracy : " + (truePredict / sizeTest))
+        println(svm.weights(0))
+        println(svm.weights(1))
     }
 }
