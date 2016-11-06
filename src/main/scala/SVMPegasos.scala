@@ -1,14 +1,10 @@
-/**
-  * Created by Aun on 04/11/2016.
-  */
-
 import breeze.linalg._
 import math._
 import scala.util.Random
 
-class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
+class SVMPegasos(lambda : Double, dimInput : Int, nClasses : Int) extends SVM{
 
-    var weights = new Array[DenseVector[Double]](nClasses)
+    val weights = new Array[DenseVector[Double]](nClasses)
     for (i <- 0 until nClasses){
         weights(i) = DenseVector.zeros[Double](dimInput)
     }
@@ -16,21 +12,7 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
     var currentTime = 1
     val random = new Random
 
-    def train(examples : Array[DataPoint]): Unit ={
-        for (t <- examples.indices){
-            val x = examples(t).input
-            for (currentClass <- 0 until nClasses){
-                val y = if (examples(t).output.contains(currentClass)) 1.0 else -1.0
-                if (y * (weights(currentClass).t * x) < 1){
-                    val w_temp = weights(currentClass) + 1.0 / sqrt(t + currentTime + 1) * y * x
-                    weights(currentClass) = w_temp * math.min(1.0, 1.0 / sqrt(lambda) / norm(w_temp))
-                }
-            }
-        }
-        currentTime += examples.length
-    }
-
-    def trainPegasos(examples : Array[DataPoint], timesteps : Int, batchSize : Int) = {
+    def train(examples : Array[DataPoint], timesteps : Int, batchSize : Int) = {
         for (t <- 1 to timesteps){
             for (currentClass <- 0 until nClasses) {
                 var wPos = DenseVector.zeros[Double](dimInput)
@@ -44,9 +26,9 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
                 }
                 val eta = 1.0 / lambda / (t + currentTime)
                 weights(currentClass) = (1.0 - eta * lambda) * weights(currentClass) +
-                                        eta / batchSize * wPos
+                    eta / batchSize * wPos
                 weights(currentClass) = math.min(1.0, 1.0 / sqrt(lambda) / norm(weights(currentClass))) *
-                                            weights(currentClass)
+                    weights(currentClass)
             }
         }
         currentTime += timesteps
@@ -63,21 +45,13 @@ class SVM_OCP (lambda : Double, dimInput : Int, nClasses : Int){
         sClasses
     }
 
-    def predict(inputs : List[DenseVector[Double]]) : List[Set[Int]] = {
-        var lRes = List[Set[Int]]()
-        for (input <- inputs){
-            lRes = predict(input) :: lRes
-        }
-        lRes.reverse
-    }
-
 }
 
-object SVM_OCP {
+object SVMPegasos {
     val random = new Random()
     def main(args : Array[String]): Unit = {
 
-        val svm = new SVM_OCP(0.01, 3, 2)
+        val svm = new SVMPegasos(0.01, 3, 2)
         val sizeTraining = 100000
         val sizeTest = 1000
         val training = new Array[DataPoint](sizeTraining)
@@ -98,7 +72,7 @@ object SVM_OCP {
             training(i) = DataPoint(x, out)
         }
 
-        svm.trainPegasos(training, 100000, 10)
+        svm.train(training, 100000, 10)
 
         var truePredict = 0.0
         for (i <- 0 until sizeTest) {
@@ -115,8 +89,51 @@ object SVM_OCP {
                 if (prediction.contains(0) && !prediction.contains(1)) truePredict += 1
             }
         }
-        println("Accuracy : " + (truePredict / sizeTest))
+        println("Linearly separable accuracy : " + (truePredict / sizeTest))
         println(svm.weights(0))
         println(svm.weights(1))
+
+        val svm2 = new SVMPegasos(0.01, 3, 2)
+
+        val training2 = new Array[DataPoint](sizeTraining)
+
+        for (i <- training2.indices) {
+            val x = DenseVector.zeros[Double](3)
+            var out = Set[Int]()
+            x(0) = random.nextDouble() * 4.0 - 2.0
+            x(1) = random.nextDouble() * 4.0 - 2.0
+            // Bias
+            x(2) = 1
+            if (x(0) * x(0) + x(1) * x(1) < 1){
+                out += 0
+            } else {
+                out += 1
+            }
+            training2(i) = DataPoint(x, out)
+        }
+
+        println("Begin training")
+        svm2.train(training2, 1000, 10)
+        println("End training")
+
+        truePredict = 0.0
+        for (i <- 0 until sizeTest) {
+            val x = DenseVector.zeros[Double](3)
+            x(0) = random.nextDouble() * 4.0 - 2.0
+            x(1) = random.nextDouble() * 4.0 - 2.0
+            x(2) = 1
+            val prediction = svm2.predict(x)
+            if (x(0) * x(0) + x(1) * x(1) < 1){
+                if (prediction.contains(0) && !prediction.contains(1)){
+                    truePredict += 1
+                }
+            } else {
+                if (prediction.contains(1) && !prediction.contains(0)){
+                    truePredict += 1
+                }
+            }
+        }
+        println("Circle separable accuracy : " + (truePredict / sizeTest))
     }
 }
+
