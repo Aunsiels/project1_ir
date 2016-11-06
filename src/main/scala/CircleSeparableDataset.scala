@@ -9,7 +9,7 @@ class CircleSeparableDataset (trainingSize : Int, validationSize : Int, testSize
 
     override val trainingData: Array[DataPoint] = new Array[DataPoint](trainingSize)
     override val validationData: Array[DataPoint] = new Array[DataPoint](validationSize)
-    override val testData: Array[DenseVector[Double]] = new Array[DenseVector[Double]](testSize)
+    override val testData: Array[DataPoint] = new Array[DataPoint](testSize)
 
     val random = new Random
 
@@ -21,11 +21,12 @@ class CircleSeparableDataset (trainingSize : Int, validationSize : Int, testSize
         // Bias
         x(2) = 1
         if (x(0) * x(0) + x(1) * x(1) < 1){
-            out += 0
+            // Noise
+            out += (if (random.nextFloat < 0.95) 0 else 1)
         } else {
-            out += 1
+            out += (if (random.nextFloat < 0.95) 1 else 0)
         }
-        trainingData(i) = DataPoint(x, out)
+        trainingData(i) = new DataPointSimple(x, out)
     }
 
     for (i <- validationData.indices){
@@ -40,11 +41,11 @@ class CircleSeparableDataset (trainingSize : Int, validationSize : Int, testSize
         } else {
             out += 1
         }
-        validationData(i) = DataPoint(x, out)
+        validationData(i) = new DataPointSimple(x, out)
     }
 
     for (i <- testData.indices){
         val x = DenseVector.zeros[Double](3)
-        testData(i) = x
+        testData(i) = new DataPointSimple(x, Set[Int]())
     }
 }

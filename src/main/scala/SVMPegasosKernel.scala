@@ -5,7 +5,7 @@ import scala.util.Random
 /**
   * Created by Aun on 06/11/2016.
   */
-class SVMPegasosKernel(lambda : Double, dimInput : Int, nClasses : Int, kernel : Kernel){
+class SVMPegasosKernel(lambda : Double, dimInput : Int, nClasses : Int, kernel : Kernel) extends SVM {
 
     val alphas = new Array[DenseVector[Double]](nClasses)
     for (i <- alphas.indices){
@@ -74,14 +74,11 @@ object SVMPegasosKernel {
 
         svm.train(linearSet.getTrainingData, nTraining, batchSize)
 
-        var truePredict = 0.0
         val validationData = linearSet.getValidationData
-        for (data <- validationData) {
-            val prediction = svm.predict(data.input)
-            if (data.output == prediction) truePredict += 1
-        }
+        val predictions = svm.predict(validationData)
+        val stat = Evaluation.getStat(predictions, validationData.map(_.output), 1.0)
 
-        println("Linearly separable accuracy : " + (truePredict / validationData.length))
+        println("Linearly separable accuracy : " + stat)
 
         val svm2 = new SVMPegasosKernel(lambda, sizeInput, nClasses, new RBFKernel(sigma))
 
@@ -91,11 +88,10 @@ object SVMPegasosKernel {
         svm2.train(circleSet.trainingData, nTraining, batchSize)
         println("End training")
 
-        truePredict = 0.0
-        for (data <- circleSet.validationData){
-            val prediction = svm2.predict(data.input)
-            if (data.output == prediction) truePredict += 1
-        }
-        println("Circle separable accuracy : " + (truePredict / sizeValidation))
+        val validationData2 = circleSet.getValidationData
+        val predictions2 = svm2.predict(validationData2)
+        val stat2 = Evaluation.getStat(predictions2, validationData2.map(_.output), 1.0)
+
+        println("Circle separable accuracy : " + stat2)
     }
 }
