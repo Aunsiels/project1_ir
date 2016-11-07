@@ -6,8 +6,8 @@ import breeze.linalg.DenseVector
 trait Dataset {
     val trainingData : Array[DataPoint]
     val validationData : Array[DataPoint]
-    val testData : Array[DenseVector[Double]]
+    val testData : Array[DataPoint]
     def getTrainingData : Array[DataPoint] = trainingData
     def getValidationData : Array[DataPoint] = validationData
-    def getTestData : Array[DenseVector[Double]] = testData
+    def getTestData : Array[DataPoint] = testData
 }

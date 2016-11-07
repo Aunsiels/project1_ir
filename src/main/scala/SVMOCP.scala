@@ -22,7 +22,7 @@ class SVMOCP (lambda : Double, dimInput : Int, nClasses : Int) extends SVM{
             for (currentClass <- 0 until nClasses){
                 val y = if (examples(t).output.contains(currentClass)) 1.0 else -1.0
                 if (y * (weights(currentClass).t * x) < 1){
-                    val w_temp = weights(currentClass) + 1.0 / sqrt(t + currentTime + 1) * y * x
+                    val w_temp = weights(currentClass) + 1.0 / sqrt(t + currentTime + 1) * (y * x)
                     weights(currentClass) = w_temp * math.min(1.0, 1.0 / sqrt(lambda) / norm(w_temp))
                 }
             }
@@ -60,14 +60,11 @@ object SVMOCP {
 
         svm.train(linearSet.getTrainingData, nTraining, batchSize)
 
-        var truePredict = 0.0
         val validationData = linearSet.getValidationData
-        for (data <- validationData) {
-            val prediction = svm.predict(data.input)
-            if (data.output == prediction) truePredict += 1
-        }
+        val predictions = svm.predict(validationData)
+        val stat = Evaluation.getStat(predictions, validationData.map(_.output), 1.0)
 
-        println("Linearly separable accuracy : " + (truePredict / validationData.length))
+        println("Linearly separable accuracy : " + stat)
 
         val svm2 = new SVMOCP(lambda, sizeInput, nClasses)
 
@@ -77,11 +74,10 @@ object SVMOCP {
         svm2.train(circleSet.trainingData, nTraining, batchSize)
         println("End training")
 
-        truePredict = 0.0
-        for (data <- circleSet.validationData){
-            val prediction = svm2.predict(data.input)
-            if (data.output == prediction) truePredict += 1
-        }
-        println("Circle separable accuracy : " + (truePredict / sizeValidation))
+        val validationData2 = circleSet.getValidationData
+        val predictions2 = svm2.predict(validationData2)
+        val stat2 = Evaluation.getStat(predictions2, validationData2.map(_.output), 1.0)
+
+        println("Circle separable accuracy : " + stat2)
     }
 }

@@ -3,5 +3,7 @@
   */
 import breeze.linalg._
 
-case class DataPoint (input : DenseVector[Double], output : Set[Int]){
+trait DataPoint{
+    def input : DenseVector[Double]
+    def output : Set[Int]
 }
