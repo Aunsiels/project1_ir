@@ -17,7 +17,7 @@ class RCVParseSmart(is: InputStream, reduceStopWords: Boolean = false, stemming:
 
   val replace = (word: String, tup: Tuple2[util.matching.Regex, String]) => tup._1.replaceAllIn(word, tup._2)
 
-  def tokenize(words: List[String]): List[String] = {
+  private def tokenize(words: List[String]): List[String] = {
     words.flatMap(x => {
       var t = x
       t = replace(t, RCVParseSmart.rLine)
