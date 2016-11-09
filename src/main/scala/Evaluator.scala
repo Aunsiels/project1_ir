@@ -13,8 +13,8 @@ class Evaluator() {
   }
   
   def computeF1Score(chosenLabels : Set[String], trueLabels : Set[String]) : Double = {
-    //println(chosenLabels)
-    //println(trueLabels)
+    println("Chosen labels: " + chosenLabels)
+    println("True labels: " + trueLabels)
     var correctLabelsChosen = chosenLabels.intersect(trueLabels).size.toDouble
     var totalLabelsChosen = chosenLabels.size.toDouble
     var totalLabelsGroundTruth = trueLabels.size.toDouble
@@ -24,10 +24,14 @@ class Evaluator() {
     var alpha = 0.5
     //println(precision)
     //println(recall)
-    var f1score = (((beta*beta)+1)*precision*recall) / ((beta*beta*precision)+recall) + 1
+    var f1score = 0.0
+    if(correctLabelsChosen != 0) {
+      f1score = (((beta*beta)+1)*precision*recall) / ((beta*beta*precision)+recall)
+    }
+    
     /*println(precision)
-    println(recall)
-    println(f1score)*/
+    println(recall)*/
+    //println(f1score)
     return f1score
   }
 }
