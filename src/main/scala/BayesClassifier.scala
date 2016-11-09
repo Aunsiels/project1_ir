@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 import java.time.Duration;
 
 object RunClassification {
+
+
   def main(args: Array[String]) = {
+<<<<<<< Updated upstream
            
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/4"
@@ -30,11 +33,23 @@ object RunClassification {
     val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
     //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
+=======
+
+    val trainingDir = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/50000"
+    val validationDir = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/10"
+
+    val rcvStreamTraining = new RCVStreamSmart(trainingDir, stopWords = true, stemming=true)
+    println("Number of training documents: " + rcvStreamTraining.length)
+    
+    val rcvStreamValidation = new RCVStreamSmart(validationDir, stopWords = true, stemming=true)
+
+>>>>>>> Stashed changes
     println("Number of validation documents: " + rcvStreamValidation.length)
     
     var startTime = LocalDateTime.now()
     var bayesClassifier = new BayesClassifier()
     bayesClassifier.train(rcvStreamTraining)
+
     var endTime = LocalDateTime.now()
     var duration = Duration.between(startTime, endTime);
     println("Time needed for Training: " + duration)
@@ -67,12 +82,21 @@ class BayesClassifier() {
   var denominatorsPerNotCategory : Map[String, Double] = _
   var docsPerCategory : Map[String, Set[String]] = _
   var termFrequenciesOverAllDocs : Map[String, Int] = Map()
+<<<<<<< Updated upstream
   var validationCounter = 0
   var amountOfValidationDocs = 0
   
+=======
+
+  /**
+    * Training using a single Naive Bayes Classifier.
+    * @param rcvStreamTrain
+    */
+>>>>>>> Stashed changes
   def train(rcvStreamTrain: ReutersRCVStream) = {
         
     streamOfXMLDocs = rcvStreamTrain.stream
+    println(s"Number of documents: ${streamOfXMLDocs.length}")
     
     //extract categories from all documents
     categories = streamOfXMLDocs.flatMap(_.codes).toSet

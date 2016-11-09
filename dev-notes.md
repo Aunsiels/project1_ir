@@ -181,3 +181,10 @@ Process finished with exit code 130 (interrupted by signal 2: SIGINT)
 
 Starts degradign quite fast after 30'000 read documents.
 
+## Development environment
+
+On OSX, when a directory is zipped, the resource files are also added.
+Have to use:
+
+    $ zip -rX hallo.zip directory
+    
