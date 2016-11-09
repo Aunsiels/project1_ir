@@ -17,7 +17,9 @@ class SVMOCP (lambda : Double, dimInput : Int, nClasses : Int) extends SVM{
     val random = new Random
 
     def train(examples : Array[DataPoint], timesteps : Int, batchSize : Int): Unit ={
+        println("Begin training SVM OCP")
         for (t <- examples.indices){
+            if (t%1000 == 0) println((t / examples.length.toDouble) + "%")
             val x = examples(t).input
             for (currentClass <- 0 until nClasses){
                 val y = if (examples(t).output.contains(currentClass)) 1.0 else -1.0
