@@ -7,9 +7,9 @@ import ch.ethz.dal.tinyir.processing.Tokenizer
   */
 class RCVDataset(path : String) extends Dataset{
 
-    val train = new ReutersRCVStream(path+"/train")
-    val test = new ReutersRCVStream(path+"/test")
-    val validation = new ReutersRCVStream(path+"/validation")
+    val train = new RCVStreamSmart(path+"/train", stopWords = true, stemming = true)
+    val test = new RCVStreamSmart(path+"/test", stopWords = true, stemming = true)
+    val validation = new RCVStreamSmart(path+"/validation", stopWords = true, stemming = true)
     println("Number of files in train : " + train.length)
     println("Number of files in test : " + test.length)
     println("Number of files in validation : " + validation.length)
@@ -21,10 +21,10 @@ class RCVDataset(path : String) extends Dataset{
     var classSet = Set[String]()
     var wordsCount = Map[String, Int]()
 
-    // If I do not cache everything here, I get outofmemory error (problem in XMLDocument?)
-    val trainingList = train.stream.map(doc => (doc.content, doc.codes)).take(50000).toList
-    val validationList = validation.stream.take(10000).toList
-    val testList = test.stream.take(10000).toList
+    // If I do not cache everything here, I get outofmemory error (streal recreated)
+    var trainingList = train.stream.map(doc => (doc.content, doc.codes)).toList
+    var validationList = validation.stream.toList
+    var testList = test.stream.toList
 
     println("Getting words")
     // Get words counts and classes
@@ -39,7 +39,7 @@ class RCVDataset(path : String) extends Dataset{
     println("Number classes : " + classSet.size)
 
     // Reduce vocabulary
-    wordsCount = wordsCount.filter(key => (key._2 > 10 && key._2 < 1000))
+    //wordsCount = wordsCount.filter(key => (key._2 > 10 && key._2 < 1000))
     println("Number of words after filter : " + wordsCount.size)
 
     // Explain how to transform to integer
@@ -51,6 +51,18 @@ class RCVDataset(path : String) extends Dataset{
     var dictionary = Map[String, Int]()
     for ((c, i) <- wordsCount.keys.zipWithIndex){
         dictionary += (c -> i)
+    }
+
+    def getVector(tokens : Iterable[String]) = {
+        val x = DenseVector.zeros[Double](dictionary.size + 1)
+        x(dictionary.size) = 1.0
+        // Words
+        for (word <- tokens){
+            if (dictionary.contains(word)){
+                x(dictionary.getOrElse(word, 0)) += 1
+            }
+        }
+        x
     }
 
     // Build the datasets

@@ -14,6 +14,7 @@ class SVMPegasos(lambda : Double, dimInput : Int, nClasses : Int) extends SVM{
 
     def train(examples : Array[DataPoint], timesteps : Int, batchSize : Int) = {
         for (t <- 1 to timesteps){
+            if (t%50 == 0) println((t / timesteps.toDouble) + "%")
             for (currentClass <- 0 until nClasses) {
                 var wPos = DenseVector.zeros[Double](dimInput)
                 for (s <- 0 until batchSize) {
