@@ -1,69 +1,43 @@
-import ch.ethz.dal.tinyir.io.ReutersRCVStream
-import ch.ethz.dal.tinyir.processing.XMLDocument
 import scala.collection.mutable.{Map => MutMap}
 
 import ch.ethz.dal.tinyir.io.ReutersRCVStream
 import ch.ethz.dal.tinyir.processing.XMLDocument
 import scala.collection.mutable.{Map => MutMap}
-import java.util.Date
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.Duration;
+import java.time.LocalDateTime
+import java.time.Duration
 
 object RunClassification {
 
 
   def main(args: Array[String]) = {
-<<<<<<< Updated upstream
-           
-    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
-    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/4"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/10000"
-    //val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
-    //val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
-    val rcvStreamTraining = new RCVStreamSmart(trainingFiles, stopWords = true, stemming=true)
-    println("Number of training documents: " + rcvStreamTraining.length)
-    
-    //val testFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/test"
-    //val rcvStreamTest = new ReutersRCVStream(testFiles, ".xml")
-    //println("Number of test documents: " + rcvStreamTest.length)
-    
-    //val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
-    //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/2"
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
-    val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
-    //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
-=======
 
     val trainingDir = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/50000"
     val validationDir = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/10"
 
     val rcvStreamTraining = new RCVStreamSmart(trainingDir, stopWords = true, stemming=true)
-    println("Number of training documents: " + rcvStreamTraining.length)
+    println("Number of training documents: " + rcvStreamTraining.stream.length)
     
     val rcvStreamValidation = new RCVStreamSmart(validationDir, stopWords = true, stemming=true)
-
->>>>>>> Stashed changes
-    println("Number of validation documents: " + rcvStreamValidation.length)
+    println("Number of validation documents: " + rcvStreamValidation.stream.length)
     
     var startTime = LocalDateTime.now()
-    var bayesClassifier = new BayesClassifier()
+    val bayesClassifier = new BayesClassifier()
     bayesClassifier.train(rcvStreamTraining)
 
     var endTime = LocalDateTime.now()
-    var duration = Duration.between(startTime, endTime);
+    var duration = Duration.between(startTime, endTime)
     println("Time needed for Training: " + duration)
     
     startTime = LocalDateTime.now()
     //bayesClassifier.validate(rcvStreamValidation)
-    var chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
+    val chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
     //println(chosenLabels)
     endTime = LocalDateTime.now()
-    duration = Duration.between(startTime, endTime);
+    duration = Duration.between(startTime, endTime)
     println("Time needed for Labeling of new Docs: " + duration)    
     
-    var evaluator = new Evaluator()
-    var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
+    val evaluator = new Evaluator()
+    val trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
     evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
   
     println("finished")   
@@ -82,17 +56,14 @@ class BayesClassifier() {
   var denominatorsPerNotCategory : Map[String, Double] = _
   var docsPerCategory : Map[String, Set[String]] = _
   var termFrequenciesOverAllDocs : Map[String, Int] = Map()
-<<<<<<< Updated upstream
   var validationCounter = 0
   var amountOfValidationDocs = 0
   
-=======
 
   /**
     * Training using a single Naive Bayes Classifier.
-    * @param rcvStreamTrain
+    * @param rcvStreamTrain stream of xml documents
     */
->>>>>>> Stashed changes
   def train(rcvStreamTrain: ReutersRCVStream) = {
         
     streamOfXMLDocs = rcvStreamTrain.stream
@@ -178,9 +149,9 @@ class BayesClassifier() {
   def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = { 
     amountOfValidationDocs = rcvStreamValidation.stream.length
     validationCounter = 0
-    var docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))
+    val docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))
     //println(docLabels)
-    return docLabels
+    docLabels
   }
   
   def assignLabelsToDoc(tokens : List[String], docName : String) : Set[String] = {
@@ -188,57 +159,57 @@ class BayesClassifier() {
     if((validationCounter % 100) == 0) {
       println("assign labels to document " + validationCounter + " (of totally " + amountOfValidationDocs + ")")
     }
-    var labels = categories.groupBy(identity).mapValues(_.head).mapValues(c => checkIfDocInCategory(tokens, c)).filter(c => c._2 == true).keySet
-    return labels
+    val labels = categories.groupBy(identity).mapValues(_.head).mapValues(c => checkIfDocInCategory(tokens, c)).filter(c => c._2 == true).keySet
+    labels
   }
   
   def checkIfDocInCategory_new(tokens : List[String], category : String) : Boolean = {
     //println("analyzing category: " + category)
-    var tf = tokens.groupBy(identity).mapValues(l=>l.length.toDouble)  
+    val tf = tokens.groupBy(identity).mapValues(l=>l.length.toDouble)
     //println("term frequencies: " + tf)
-    var pc = classProbabilities(category)
+    val pc = classProbabilities(category)
     //println("p(c) for c="+category + ": " + pc)
-    var scoreInClass = Math.log10(pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(getPwcOfDocsWithCatForTerm(t._1,category)))).sum
-    var scoreNotInClass = Math.log10(1 - pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(getPwcOfDocsWithoutCatForTerm(t._1,category)))).sum 
+    val scoreInClass = Math.log10(pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(getPwcOfDocsWithCatForTerm(t._1,category)))).sum
+    val scoreNotInClass = Math.log10(1 - pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(getPwcOfDocsWithoutCatForTerm(t._1,category)))).sum
     //println("score in category " + category + ": " + scoreInClass)
     //println("score not in category " + category + ": " + scoreNotInClass) 
     if(scoreInClass > scoreNotInClass) {
       println("  assigned category " + category)
     }
-    return (scoreInClass > scoreNotInClass)
+    scoreInClass > scoreNotInClass
   }
   
   def checkIfDocInCategory(tokens : List[String], category : String) : Boolean = {
-    var tf = tokens.groupBy(identity).mapValues(l=>l.length)  
-    var cwp = conditionalWordProbabilities(category)
-    var pc = classProbabilities(category)
+    val tf = tokens.groupBy(identity).mapValues(l=>l.length)
+    val cwp = conditionalWordProbabilities(category)
+    val pc = classProbabilities(category)
     //println(pc)
     //var scoreInClass = Math.log(pc) + tokens.map(t => (tf(t) * Math.log(cwp.getPwcOfDocsWithCatForTerm(t)))).sum 
     //var scoreNotInClass = Math.log(1 - pc) + tokens.map(t => (tf(t) * Math.log(cwp.getPwcOfDocsWithoutCatForTerm(t)))).sum 
-    var scoreInClass = Math.log10(pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(cwp.getPwcOfDocsWithCatForTerm(t._1)))).sum
-    var scoreNotInClass = Math.log10(1 - pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(cwp.getPwcOfDocsWithoutCatForTerm(t._1)))).sum 
+    val scoreInClass = Math.log10(pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(cwp.getPwcOfDocsWithCatForTerm(t._1)))).sum
+    val scoreNotInClass = Math.log10(1 - pc) + tokens.groupBy(identity).map(t => (tf(t._1) * Math.log10(cwp.getPwcOfDocsWithoutCatForTerm(t._1)))).sum
     //println("score in category " + category + ": " + scoreInClass)
     //println("score not in category " + category + ": " + scoreNotInClass) 
-    return (scoreInClass > scoreNotInClass)
+    scoreInClass > scoreNotInClass
   }
   
   def getPwcOfDocsWithCatForTerm(term : String, category : String) : Double = {
-    var sum = docsPerCategory(category).toList.map(docName => (termFrequenciesPerDocument(docName).getOrElse(term, 0))).sum.toDouble + 1.0
-    var denominator = denominatorsPerCategory(category).toDouble
+    val sum = docsPerCategory(category).toList.map(docName => (termFrequenciesPerDocument(docName).getOrElse(term, 0))).sum.toDouble + 1.0
+    val denominator = denominatorsPerCategory(category).toDouble
     //println("p(w|c) for w=" + term + " and c="+category + ": " + sum+"/"+denominator)
-    return (sum/denominator)
+    sum/denominator
   }
   
   def getPwcOfDocsWithoutCatForTerm(term : String, category : String) : Double = {
-    var docs = termFrequenciesPerDocument.keys.filterNot(docsPerCategory(category))
-    var sum = docs.toList.map(docName => (termFrequenciesPerDocument(docName).getOrElse(term, 0))).sum.toDouble + 1.0
+    val docs = termFrequenciesPerDocument.keys.filterNot(docsPerCategory(category))
+    val sum = docs.toList.map(docName => termFrequenciesPerDocument(docName).getOrElse(term, 0)).sum.toDouble + 1.0
     //var denominator = denominatorsPerCategory.filterNot(cat => (cat._1 == category)).values.sum.toDouble
-    var denominator = denominatorsPerNotCategory(category).toDouble
+    val denominator = denominatorsPerNotCategory(category).toDouble
     //println("p(w| not c) for w=" + term + " and c="+category + ": " + sum+"/"+denominator)
-    return (sum/denominator)
+    sum/denominator
   }
     
   def computeClassProbability(category : String) : Double = {
-    return streamOfXMLDocs.filter(_.codes(category)).length / streamOfXMLDocs.length.toDouble
+    streamOfXMLDocs.filter(_.codes(category)).length / streamOfXMLDocs.length.toDouble
   }
 }
