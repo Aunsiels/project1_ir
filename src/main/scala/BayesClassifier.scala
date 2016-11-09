@@ -15,7 +15,7 @@ object RunClassification {
            
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/4"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/50000"
+    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/10000"
     //val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
     //val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
     val rcvStreamTraining = new RCVStreamSmart(trainingFiles, stopWords = true, stemming=true)
@@ -27,7 +27,7 @@ object RunClassification {
     
     //val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
     //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/2"
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/10"
+    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
     //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
@@ -50,12 +50,7 @@ object RunClassification {
     var evaluator = new Evaluator()
     var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
     evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
-    
-    //var logisticRegressionClassifier = new LogisticRegressionClassifier()
-    //logisticRegressionClassifier.train(rcvStreamTraining)
-    
-    
-    /**/
+  
     println("finished")   
   }
 }
@@ -72,6 +67,8 @@ class BayesClassifier() {
   var denominatorsPerNotCategory : Map[String, Double] = _
   var docsPerCategory : Map[String, Set[String]] = _
   var termFrequenciesOverAllDocs : Map[String, Int] = Map()
+  var validationCounter = 0
+  var amountOfValidationDocs = 0
   
   def train(rcvStreamTrain: ReutersRCVStream) = {
         
@@ -155,13 +152,18 @@ class BayesClassifier() {
   }*/
   
   def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = { 
+    amountOfValidationDocs = rcvStreamValidation.stream.length
+    validationCounter = 0
     var docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))
     //println(docLabels)
     return docLabels
   }
   
   def assignLabelsToDoc(tokens : List[String], docName : String) : Set[String] = {
-    println("assign labels to document: " + docName)
+    validationCounter += 1
+    if((validationCounter % 100) == 0) {
+      println("assign labels to document " + validationCounter + " (of totally " + amountOfValidationDocs + ")")
+    }
     var labels = categories.groupBy(identity).mapValues(_.head).mapValues(c => checkIfDocInCategory(tokens, c)).filter(c => c._2 == true).keySet
     return labels
   }
