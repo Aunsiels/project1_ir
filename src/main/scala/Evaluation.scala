@@ -4,7 +4,13 @@
 object Evaluation {
     case class Stat(precision : Double,
                     recall : Double,
-                    f1 : Double)
+                    f1 : Double){
+        override def toString : String = {
+            "Precision : " + precision + "\n" +
+            "Recall    : " + recall    + "\n" +
+            "F1        : " + f1
+        }
+    }
 
 
     // retriev = prediction

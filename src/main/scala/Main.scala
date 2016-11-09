@@ -22,5 +22,9 @@ object Main {
             println(stat)
             currentF1 = stat.f1
         } while(currentF1 > bestF1)
+        val testData = data.getTrainingData
+        val predictions = svm.predict(testData)
+        val stat = Evaluation.getStat(predictions, testData.map(_.output), 1.0)
+        println("Evaluation Test : " + stat)
     }
 }
