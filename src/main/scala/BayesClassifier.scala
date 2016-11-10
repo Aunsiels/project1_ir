@@ -10,12 +10,12 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.Duration;
 
-object RunClassification {
+object RunBayesClassifier {
   def main(args: Array[String]) = {
            
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
-    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/4"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/10000"
+    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/50000"
+    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/50000"
     //val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
     //val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
     val rcvStreamTraining = new RCVStreamSmart(trainingFiles, stopWords = true, stemming=true)
@@ -26,8 +26,8 @@ object RunClassification {
     //println("Number of test documents: " + rcvStreamTest.length)
     
     //val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
-    //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/2"
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
+    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/1000"
+    //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
     //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
@@ -47,10 +47,11 @@ object RunClassification {
     duration = Duration.between(startTime, endTime);
     println("Time needed for Labeling of new Docs: " + duration)    
     
-    var evaluator = new Evaluator()
     var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
+    var evaluator = new Evaluator()
     evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
-  
+    val stat =  Evaluation.getStat(chosenLabels.map(doc => doc._2), trueLabels.map(doc => doc._2), 1.0)
+    println("Evaluation Test : " + stat)
     println("finished")   
   }
 }
@@ -79,9 +80,9 @@ class BayesClassifier() {
     println("Number of categories: " + categories.size)
 
     //extract tokens from all documents
-    tokens = streamOfXMLDocs.flatMap(_.tokens).toSet
-    val vocabularySize = tokens.size
-    println("Vocabulary Size: " + vocabularySize)
+    //tokens = streamOfXMLDocs.flatMap(_.tokens).toSet
+    //val vocabularySize = tokens.size
+    //println("Vocabulary Size: " + vocabularySize)
   
     //for each category compute class probability P(c) 
     classProbabilities = categories.groupBy(identity).mapValues(_.head).map(cat => (cat._1, computeClassProbability(cat._2)))
@@ -99,17 +100,6 @@ class BayesClassifier() {
     termFrequenciesPerDocument = streamOfXMLDocs.groupBy(identity).map(doc => (doc._1.name, doc._1.tokens.groupBy(identity).map(term => (term._1, term._2.size))))
     println("termfrequencies computed")
     
-    denominatorsPerCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filter(_.codes(category._1)).map(doc => doc.tokens.size).sum.toDouble + vocabularySize))))
-    println("denominator per Cat: "+denominatorsPerCategory)
-    println("denominatorsPerCategory computed")
-    
-    denominatorsPerNotCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filterNot(_.codes(category._1)).map(doc => doc.tokens.size).sum.toDouble + vocabularySize))))
-    println("denominator per Cat not: "+denominatorsPerNotCategory)
-    println("denominatorsPerNotCategory computed")
-    
-    docsPerCategory = categories.groupBy(identity).map(category => (category._1, streamOfXMLDocs.filter(_.codes(category._1)).map(doc => doc.name).toSet))
-    println("docsPerClass computed")
-    
     termFrequenciesPerDocument.foreach{
       tf => tf._2.toMap
       termFrequenciesOverAllDocs = termFrequenciesOverAllDocs ++ tf._2.map {
@@ -118,38 +108,37 @@ class BayesClassifier() {
     }
     println("termFrequenciesOverAllDocs computed")
     
+    println("vocabulary size before filtering: " + termFrequenciesOverAllDocs.size)
+    termFrequenciesOverAllDocs = termFrequenciesOverAllDocs.filter(_._2 > 0)
+    var vocabulary = termFrequenciesOverAllDocs.keys.toSet
+    val vocabularySize = vocabulary.size
+    //println(vocabulary)
+    
+    termFrequenciesPerDocument = termFrequenciesPerDocument.map(tfdoc => (tfdoc._1, tfdoc._2.filter(tf => (vocabulary.contains(tf._1)))))
+    //println(termFrequenciesPerDocument)
+    println("vocabulary size after filtering: " + vocabularySize)
+    
+    //change
+    //denominatorsPerCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filter(_.codes(category._1)).map(doc => doc.tokens.size).sum.toDouble + vocabularySize))))
+    denominatorsPerCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filter(_.codes(category._1)).map(doc => termFrequenciesPerDocument(doc.name).map(tf => tf._2).sum).sum.toDouble + vocabularySize))))    
+    println("denominator per Cat: "+denominatorsPerCategory)
+    println("denominatorsPerCategory computed")
+    
+    //change
+    //denominatorsPerNotCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filterNot(_.codes(category._1)).map(doc => doc.tokens.size).sum.toDouble + vocabularySize))))
+    denominatorsPerNotCategory = categories.groupBy(identity).map(category => (category._1, ((streamOfXMLDocs.filterNot(_.codes(category._1)).map(doc => termFrequenciesPerDocument(doc.name).map(tf => tf._2).sum).sum.toDouble + vocabularySize))))
+    println("denominator per Cat not: "+denominatorsPerNotCategory)
+    println("denominatorsPerNotCategory computed")
+    
+    docsPerCategory = categories.groupBy(identity).map(category => (category._1, streamOfXMLDocs.filter(_.codes(category._1)).map(doc => doc.name).toSet))
+    println("docsPerClass computed")
+    
     //conditionalWordProbabilities = categories.groupBy(identity).map(cat => (cat._1, new SmartConditionalWordProbability((cat._1), termFrequenciesPerDocument, denominatorsPerCategory(cat._1), denominatorsPerNotCategory(cat._1), docsPerCategory(cat._1))))
     //conditionalWordProbabilities = categories.groupBy(identity).map(cat => (cat._1, createConditionalWordProbabilities((cat._1), denominatorsPerCategory(cat._1), denominatorsPerNotCategory(cat._1), docsPerCategory(cat._1))))
     conditionalWordProbabilities = categories.groupBy(identity).map(cat => (cat._1, new SmartConditionalWordProbability((cat._1), termFrequenciesPerDocument, termFrequenciesOverAllDocs, denominatorsPerCategory(cat._1), denominatorsPerNotCategory(cat._1), docsPerCategory(cat._1))))
     println("conditionalWordProbabilities computed")
     
   }
-  
-  /*def createConditionalWordProbabilities(category : String, denominatorCategory : Double, denominatorNotCategory : Double, docsPerCategory : Set[String]) : SmartConditionalWordProbability = {
-    var termFrequenciesOfDocsWithCat = termFrequenciesPerDocument.filter(tfPerDoc => docsPerCategory.contains(tfPerDoc._1))
-    var tfMergedWithCat : Map[String, Int] = Map()
-    termFrequenciesOfDocsWithCat.foreach{
-      tf => tf._2.toMap
-      tfMergedWithCat = tfMergedWithCat ++ tf._2.map {
-        case (term,frequency) => term -> (tfMergedWithCat.getOrElse(term, 0) + frequency) 
-      }
-    }*/
-    /*var termFrequenciesOfDocsWithoutCat = termFrequenciesPerDocument.filterNot(tfPerDoc => docsPerCategory.contains(tfPerDoc._1))
-    var tfMergedWithoutCat : Map[String, Int] = Map()
-    termFrequenciesOfDocsWithoutCat.foreach{
-      tf => tf._2.toMap
-      tfMergedWithoutCat = tfMergedWithoutCat ++ tf._2.map {
-        case (term,frequency) => term -> (tfMergedWithoutCat.getOrElse(term, 0) + frequency) 
-      }
-    }*/
-    
-    //var tfMergedWithoutCat : Map[String, Int] = Map()
-    /*var tfMergedWithoutCat = termFrequenciesOverAllDocs ++ tfMergedWithCat.map {
-      case (term,frequency) => term -> (termFrequenciesOverAllDocs.getOrElse(term, 0) - frequency)
-    }
-    
-    return new SmartConditionalWordProbability(category, tfMergedWithCat, tfMergedWithoutCat, denominatorCategory, denominatorNotCategory, docsPerCategory)
-  }*/
   
   def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = { 
     amountOfValidationDocs = rcvStreamValidation.stream.length
