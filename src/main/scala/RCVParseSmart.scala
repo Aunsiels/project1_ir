@@ -15,7 +15,7 @@ class RCVParseSmart(is: InputStream, reduceStopWords: Boolean = false, stemming:
 
   val raw_tokens = super.tokens
 
-  val replace = (word: String, tup: Tuple2[util.matching.Regex, String]) => tup._1.replaceAllIn(word, tup._2)
+  private val replace = (word: String, tup: Tuple2[util.matching.Regex, String]) => tup._1.replaceAllIn(word, tup._2)
 
   private def tokenize(words: List[String]): List[String] = {
     words.flatMap(x => {
