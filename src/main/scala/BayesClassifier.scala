@@ -1,33 +1,35 @@
 import scala.collection.mutable.{Map => MutMap}
-
 import ch.ethz.dal.tinyir.io.ReutersRCVStream
 import ch.ethz.dal.tinyir.processing.XMLDocument
 import scala.collection.mutable.{Map => MutMap}
 import java.time.LocalDateTime
 import java.time.Duration
+import java.io._
 
 object RunBayesClassifier {
   def main(args: Array[String]) = {
            
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/50000"
+    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/1000"
     //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/50000"
     //val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
     //val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
     val rcvStreamTraining = new RCVStreamSmart(trainingFiles, stopWords = true, stemming=true)
     println("Number of training documents: " + rcvStreamTraining.length)
     
-    //val testFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/test"
-    //val rcvStreamTest = new ReutersRCVStream(testFiles, ".xml")
-    //println("Number of test documents: " + rcvStreamTest.length)
-    
     //val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/1000"
+    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/100"
     //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
     //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
 
+     //val testFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/test"
+     val testFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/test/10"
+     val rcvStreamTest = new RCVStreamSmart(testFiles, stopWords = true, stemming=true)
+     println("Number of test documents: " + rcvStreamTest.length)
+    
+    
     var startTime = LocalDateTime.now()
     val bayesClassifier = new BayesClassifier()
     bayesClassifier.train(rcvStreamTraining)
@@ -38,17 +40,37 @@ object RunBayesClassifier {
     
     startTime = LocalDateTime.now()
     //bayesClassifier.validate(rcvStreamValidation)
-    val chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
+    var chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
     //println(chosenLabels)
     endTime = LocalDateTime.now()
     duration = Duration.between(startTime, endTime)
-    println("Time needed for Labeling of new Docs: " + duration)    
+    println("Time needed for Labeling of validation Docs: " + duration)    
     
     var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
-    var evaluator = new Evaluator()
-    evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
+    //var evaluator = new Evaluator()
+    //evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
     val stat =  Evaluation.getStat(chosenLabels.map(doc => doc._2), trueLabels.map(doc => doc._2), 1.0)
-    println("Evaluation Test : " + stat)
+    println("Evaluation Test : ")
+    println(stat)
+    
+    startTime = LocalDateTime.now()
+    //bayesClassifier.validate(rcvStreamValidation)
+    chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamTest)
+    //println(chosenLabels)
+    endTime = LocalDateTime.now()
+    duration = Duration.between(startTime, endTime)
+    println("Time needed for Labeling of test Docs: " + duration)
+    val file = new File("C:/Users/Michael/Desktop/result_bayes.txt")
+    val bw = new BufferedWriter(new FileWriter(file))
+    for(docLabel <- chosenLabels) {
+      var outputString = docLabel._1 + " "
+      for(label <- docLabel._2) {
+        outputString += (label + " ")
+      }
+      bw.write(outputString + "\n")
+    }
+    bw.close()
+    
     println("finished")   
   }
 }
@@ -67,6 +89,7 @@ class BayesClassifier() {
   var termFrequenciesOverAllDocs : Map[String, Int] = Map()
   var validationCounter = 0
   var amountOfValidationDocs = 0
+  var vocabulary : Set[String] = _
   
 
   /**
@@ -113,7 +136,7 @@ class BayesClassifier() {
     
     println("vocabulary size before filtering: " + termFrequenciesOverAllDocs.size)
     termFrequenciesOverAllDocs = termFrequenciesOverAllDocs.filter(_._2 > 0)
-    var vocabulary = termFrequenciesOverAllDocs.keys.toSet
+    vocabulary = termFrequenciesOverAllDocs.keys.toSet
     val vocabularySize = vocabulary.size
     //println(vocabulary)
     
@@ -152,11 +175,12 @@ class BayesClassifier() {
   }
   
   def assignLabelsToDoc(tokens : List[String], docName : String) : Set[String] = {
+    var tokensFiltered = tokens.filter(t => vocabulary.contains(t))
     validationCounter += 1
     if((validationCounter % 100) == 0) {
       println("assign labels to document " + validationCounter + " (of totally " + amountOfValidationDocs + ")")
     }
-    val labels = categories.groupBy(identity).mapValues(_.head).mapValues(c => checkIfDocInCategory(tokens, c)).filter(c => c._2 == true).keySet
+    val labels = categories.groupBy(identity).mapValues(_.head).mapValues(c => checkIfDocInCategory(tokensFiltered, c)).filter(c => c._2 == true).keySet
     labels
   }
   
