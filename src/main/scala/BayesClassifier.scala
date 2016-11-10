@@ -6,7 +6,6 @@ import scala.collection.mutable.{Map => MutMap}
 import java.time.LocalDateTime
 import java.time.Duration
 
-<<<<<<< HEAD
 object RunBayesClassifier {
   def main(args: Array[String]) = {
            
@@ -28,22 +27,7 @@ object RunBayesClassifier {
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
     //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
-=======
-object RunClassification {
 
-
-  def main(args: Array[String]) = {
-
-    val trainingDir = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData/50000"
-    val validationDir = "C:/Users/Michael/Desktop/IR Data/Project 1/validationSub/10"
-
-    val rcvStreamTraining = new RCVStreamSmart(trainingDir, stopWords = true, stemming=true)
-    println("Number of training documents: " + rcvStreamTraining.stream.length)
-    
-    val rcvStreamValidation = new RCVStreamSmart(validationDir, stopWords = true, stemming=true)
-    println("Number of validation documents: " + rcvStreamValidation.stream.length)
->>>>>>> origin/master
-    
     var startTime = LocalDateTime.now()
     val bayesClassifier = new BayesClassifier()
     bayesClassifier.train(rcvStreamTraining)
@@ -60,13 +44,8 @@ object RunClassification {
     duration = Duration.between(startTime, endTime)
     println("Time needed for Labeling of new Docs: " + duration)    
     
-<<<<<<< HEAD
     var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
     var evaluator = new Evaluator()
-=======
-    val evaluator = new Evaluator()
-    val trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
->>>>>>> origin/master
     evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
     val stat =  Evaluation.getStat(chosenLabels.map(doc => doc._2), trueLabels.map(doc => doc._2), 1.0)
     println("Evaluation Test : " + stat)
