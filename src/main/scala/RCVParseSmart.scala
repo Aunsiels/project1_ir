@@ -62,13 +62,13 @@ object RCVParseSmart {
 
 
   // regular expressions defined statically
-  val rDate = "^\\d+[/-]\\d+[/-]\\d+$".r -> "<DATE>"
-  val rUSPhone = "^\\d{3}\\W\\d+{3}\\W\\d{4}$".r -> "<USPHONE>"
-  val rNumber = "^[-]?\\d+([.,]\\d+)*$".r -> "<NUMBER>"
-  val rTwoNum = "^\\d+[-/=]\\d+$".r -> "<TUMBER>"
-  val rOrdinal = "^\\d+(th|1st|2nd|3rd)$".r -> "<ORDINAL>"
-  val rPunct = "[,;.:]$".r -> " <PUNCT>"      // if it is like "end.", should return "end <PUNCT>"
-  val rLine = "--+".r -> ""                   // underlines like -----------
+  val rDate = ("^\\d+[/-]\\d+[/-]\\d+$".r, "<DATE>")
+  val rUSPhone = ("^\\d{3}\\W\\d+{3}\\W\\d{4}$".r -> "<USPHONE>")
+  val rNumber = ("^[-]?\\d+([.,]\\d+)*$".r -> "<NUMBER>")
+  val rTwoNum = ("^\\d+[-/=]\\d+$".r -> "<TUMBER>")
+  val rOrdinal = ("^\\d+(th|1st|2nd|3rd)$".r -> "<ORDINAL>")
+  val rPunct = ("[,;.:]$".r -> " <PUNCT>")      // if it is like "end.", should return "end <PUNCT>"
+  val rLine = ("--+".r -> "")                   // underlines like -----------
 
   /**
     * Stopwords is taken from nltk toolkit stopwords - english.

@@ -1,47 +1,7 @@
-import ch.ethz.dal.tinyir.io.ReutersRCVStream
-import ch.ethz.dal.tinyir.processing.XMLDocument
-import java.util.Date
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.Duration
 import breeze.linalg._
-import math._
+
 import scala.util.Random
 
-object RunLogisticRegressionClassifier {
-  def main(args: Array[String]) = {
-    
-    println("Loading data")
-    val data = new RCVDataset("C:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
-    
-    val lambda = 0.1
-    val nClasses = data.classSet.size
-    val nIteations = 10000
-    val dimInput = data.trainingData(0).input.length
-    val logRegClassifier = new LogisticRegressionClassifier(lambda, dimInput, nClasses)
-    
-    println("training started")
-    var startTime = LocalDateTime.now()
-    logRegClassifier.train(data.trainingData, nIteations)
-    var endTime = LocalDateTime.now()
-    var duration = Duration.between(startTime, endTime)
-    println("Time needed for Training of new Docs: " + duration)    
-    
-    println("validation started")
-    startTime = LocalDateTime.now()
-    var chosenLabels = logRegClassifier.labelNewDocuments(data.validationData)
-    endTime = LocalDateTime.now()
-    duration = Duration.between(startTime, endTime)
-    println("Time needed for Labeling of new Docs: " + duration)
-    
-    var trueLabels = data.validationData.toList.map(vd => vd.output)
-    var evaluator = new Evaluator()
-    val stat =  Evaluation.getStat(chosenLabels, trueLabels, 1.0)
-    println("Evaluation Test : " + stat)
-    println("finished")   
-    
-  }
-}
 
 class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : Int) {
    
@@ -69,11 +29,11 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
         labels += j
       }
     }
-    println("assigned labels: " + labels)
+    //println("assigned labels: " + labels)
     labels
   }
   
-  def train(trainingData : Array[DataPoint], iterations : Int) = {
+  def train(trainingData : Array[DataPoint], iterations : Int, learningRate : Double) = {
     for (currentClass <- 0 until nClasses) {
       if(currentClass % 10 == 0) {
         println(" ... training for class " +  currentClass + " (out of totally " + nClasses + ")")
@@ -83,10 +43,10 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
         val nextIndex = random.nextInt(trainingData.length)
         val trainingPoint = trainingData(nextIndex)
         val x = trainingPoint.input
-        val y = if (trainingPoint.output.contains(currentClass)) 1.0 else -1.0
-        val z = if(y == -1) (1-logistic(wCurrClass,x)) else (-1*logistic(wCurrClass,x))
-        val gradient = x * z
-        wCurrClass -= (lambda * gradient)
+        val y = if (trainingPoint.output.contains(currentClass)) 1.0 else 0.0
+        val prediction = logistic(wCurrClass, x)
+        val gradient = learningRate * (y - prediction) * prediction * (1 - prediction) * x
+        wCurrClass += gradient
       }
       weights(currentClass) = wCurrClass
     }
@@ -94,5 +54,44 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
   
   def logistic(x: DenseVector[Double], y: DenseVector[Double]) : Double = {
     (1.0 / (1.0 + Math.exp((-1.0)*x.dot(y))))
+  }
+}
+
+object LogisticRegressionClassifier {
+  val random = new Random()
+  def main(args : Array[String]): Unit = {
+    val sizeTraining = 100000
+    val sizeValidation = 1000
+    val sizeTest = 0
+    val lambda = 0.01
+    val sizeInput = 3
+    val nClasses = 2
+    val nTraining = 100000
+    val batchSize = 10
+
+    val logreg = new LogisticRegressionClassifier(lambda, sizeInput, nClasses)
+    val linearSet = new LinearSeparableDataset(sizeTraining, sizeValidation, sizeTest)
+
+    logreg.train(linearSet.getTrainingData, nTraining, lambda)
+
+    val validationData = linearSet.getValidationData
+    val predictions = logreg.labelNewDocuments(validationData)
+    val stat = Evaluation.getStat(predictions, validationData.map(_.output), 1.0)
+
+    println("Linearly separable accuracy : " + stat)
+
+    val logreg2 = new LogisticRegressionClassifier(lambda, sizeInput, nClasses)
+
+    val circleSet = new CircleSeparableDataset(sizeTraining, sizeValidation, sizeTest)
+
+    println("Begin training")
+    logreg.train(circleSet.trainingData, nTraining, lambda)
+    println("End training")
+
+    val validationData2 = circleSet.getValidationData
+    val predictions2 = logreg2.labelNewDocuments(validationData2)
+    val stat2 = Evaluation.getStat(predictions2, validationData2.map(_.output), 1.0)
+
+    println("Circle separable accuracy : " + stat2)
   }
 }
