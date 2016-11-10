@@ -2,33 +2,54 @@
   * Created by mmgreiner on 02.11.16.
   */
 
-import ch.ethz.dal.tinyir.processing.XMLDocument
 import ch.ethz.dal.tinyir.io.ReutersRCVStream
+import java.io.{FileOutputStream, PrintWriter}
+import scala.collection.JavaConversions._
 
-class RCVStreamSmart(path: String, ext: String = ".xml", stopWords: Boolean = false, stemming: Boolean = false) extends ReutersRCVStream(path, ext) {
 
-  override def stream : Stream[RCVParseSmart/*XMLDocument*/] = unparsed.stream.map(is => new RCVParseSmart(is, stopWords, stemming))
+
+/**
+  * This class extends the ReutersRCVStream.
+  * Together with the class RCVParseSmart, it provides smarter tokenizers. See the documentation for RCVParseSmart for
+  * all the parsing options.
+  *
+  * Contains a main class so that it can be tested.
+  *
+  * @param path path where the zip file resides
+  * @param ext extensions to unzip and consider
+  * @param stopWords if true, replace all stop words with <STOP>. Default false
+  * @param stemming if true, do Porter stemming. Default false
+  * @param maxDocs maximum documents in stream to consider. Default to all.
+  */
+class RCVStreamSmart(path: String, ext: String = ".xml",
+                     stopWords: Boolean = false, stemming: Boolean = false,
+                     maxDocs: Integer = Int.MaxValue)
+  extends ReutersRCVStream(path, ext) {
+
+  override def stream : Stream[RCVParseSmart/*XMLDocument*/] =
+    unparsed.stream.slice(0, maxDocs).map(is => new RCVParseSmart(is, stopWords, stemming))
 
 }
 
+
 object RCVStreamSmart {
+
+
+  def testVocabulary(dir: String): Unit = {
+    val t = new Timer(heapInfo = true)
+    println("heap " + Timer.freeMB())
+    val stream = new RCVStreamSmart(dir, stopWords = true, stemming = true)
+    val vocabulary = stream.stream.flatMap(x => {
+      t.progress(s"${x.ID} ${x.title}")
+      x.vocabulary
+    })
+    println(s"nof distinct words ${vocabulary.size}")
+  }
+
+
   def main(args: Array[String]): Unit = {
     val dir = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train/"
-    val slice = 8000
 
-    var t = System.nanoTime
-    val smartStream = new RCVStreamSmart(dir, stopWords = true, stemming=true)
-    val docs1 = smartStream.stream.slice(0, slice)
-    val tokens1 = docs1.flatMap(x => x.tokens)
-    val rawtok1 = docs1.flatMap(x => x.raw_tokens)
-    val vocab1 = tokens1.toSet
-    val vocab2 = rawtok1.toSet
-    println(s"time smart: ${(System.nanoTime - t).toDouble / 1000000000.0}")
-    println(s" tokens nof ${tokens1.size}, vocab set ${vocab1.size}")
-    println(s" raw    nof ${rawtok1.size}, vocab set ${vocab2.size}")
-    println("done")
-
-
-
+    testVocabulary(dir)
   }
 }
