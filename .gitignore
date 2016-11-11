@@ -31,3 +31,7 @@ project/plugins/project/
 
 .idea
 /bin/
+
+src/main/scala/DummyClassifier.scala
+
+train-all2.zip
