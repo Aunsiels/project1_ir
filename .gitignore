@@ -1,5 +1,13 @@
 *.class
 *.log
+src/main/scala/ch/*
+src/main/scala/com/*
+project/
+.classpath
+.cache-main
+.project
+.settings/*
+
 
 # sbt specific
 .cache
@@ -21,11 +29,4 @@ project/plugins/project/
 .ensime
 
 .idea
-
-.cache-main
-
-train-all2.zip
-
-.cache-main
-
-.cache-main
+/bin/
