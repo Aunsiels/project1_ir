@@ -35,6 +35,8 @@ object Timer {
 
   val freeMB = () => runtime.freeMemory().toDouble / 1000000.0
 
+  val totalMB = () => runtime.totalMemory().toDouble / 1000000.0
+
   var _progress_count = 0
   var _progress_time = System.nanoTime
 

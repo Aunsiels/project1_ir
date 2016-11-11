@@ -75,7 +75,7 @@ object RunBayesClassifier {
   }
 }
 
-class BayesClassifier(dir: String) extends Classifier(dir) {
+class BayesClassifier(dir: String = "") extends Classifier(dir) {
   
   var categories : Set[String] = _
   var tokens : Set[String] = _

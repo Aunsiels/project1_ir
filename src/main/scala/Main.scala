@@ -35,7 +35,7 @@ object Main {
     println("Information Retrieval Project 1")
     println
     println("Test 3 Classifiers")
-    println("arguments: <training-dir> <validation-dir>")
+    println("arguments: <directory with train, test, and validate subdirectories>")
     println
   }
 
@@ -49,32 +49,21 @@ object Main {
         case _            => Files("./zips/")
       }
 
-    log.info(s"$user, heap-space: ${Timer.freeMB()}")
+    System.gc
+
+    log.info(s"$user, heap-space: ${Timer.freeMB()} of ${Timer.totalMB()}")
 
     val slice = 10000
 
     log.info(s"Bayes classifier, reading ${files.train}")
-    val rcvStreamTraining = new RCVStreamSmart(files.train, stopWords=true, stemming=true, maxDocs=slice)
-    log.info("Number of training documents: " + rcvStreamTraining.stream.length)
 
-    val rcvStreamValidation = new RCVStreamSmart(files.validate, stopWords = true, stemming=true, maxDocs=(slice/2))
+    log.info("Naive Bayes Classifier")
+    val bayesClassifier = new BayesClassifier(files.path)
+    log.info("training")
+    bayesClassifier.train()
 
-    log.info("Number of validation documents: " + rcvStreamValidation.stream.length)
-
-    log.info("training Bayes Classifier")
-    var bayesClassifier = new BayesClassifier()
-    bayesClassifier.train(rcvStreamTraining)
-    log.info("...completed")
-
-    log.info("labelling")
-    var chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
-    log.info("...completed")
-
-    log.info("evaluating")
-    var evaluator = new Evaluator()
-    var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
-    evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
-    log.info("...completed")
+    log.info("classifying and evaluating")
+    bayesClassifier.trainAndEvaluate()
 
   }
 }
