@@ -57,13 +57,17 @@ object Main {
 
     log.info(s"Bayes classifier, reading ${files.train}")
 
+    log.info("dummy")
+    val dummyClassifier = new DummyClassifier(files.path)
+    dummyClassifier.train()
+
     log.info("Naive Bayes Classifier")
-    val bayesClassifier = new BayesClassifier(files.path)
+    val bayesClassifier = new BayesClassifier()
     log.info("training")
-    bayesClassifier.train()
+    bayesClassifier.train(new RCVStreamSmart(files.test))
 
     log.info("classifying and evaluating")
-    bayesClassifier.trainAndEvaluate()
+    //bayesClassifier.trainAndEvaluate()
 
   }
 }
