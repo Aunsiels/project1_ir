@@ -183,8 +183,39 @@ Starts degradign quite fast after 30'000 read documents.
 
 ## Development environment
 
+### Zipping training etc documents
 On OSX, when a directory is zipped, the resource files are also added.
 Have to use:
 
     $ zip -rX hallo.zip directory
     
+### Intellij environment
+There are numerous problems when importing sbt file into Intellij.
+
+Most important, make sure that the scala version is ok. In build.sbt, it has to be:
+
+    scalaVersion := "2.11.5"
+    
+Then, if you still have problems, verify that in `/.idea/libraries/SBT__org_scala_lang_scala_library_2_11_5_jar.xml` the
+version is set as follows:
+
+    <component name="libraryTable">
+      <library name="SBT: org.scala-lang:scala-library:2.11.5:jar" type="Scala">
+        <properties>
+          <compiler-classpath>
+            <root url="file://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.11.5.jar" />
+            <root url="file://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.5.jar" />
+            <root url="file://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.11.5.jar" />
+          </compiler-classpath>
+        </properties>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.5-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </component>
+    
+ 

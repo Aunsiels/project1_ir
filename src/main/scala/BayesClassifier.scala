@@ -75,7 +75,7 @@ object RunBayesClassifier {
   }
 }
 
-class BayesClassifier() {  
+class BayesClassifier(dir: String) extends Classifier(dir) {
   
   var categories : Set[String] = _
   var tokens : Set[String] = _
@@ -96,7 +96,7 @@ class BayesClassifier() {
     * Training using a single Naive Bayes Classifier.
     * @param rcvStreamTrain stream of xml documents
     */
-  def train(rcvStreamTrain: ReutersRCVStream) = {
+  override def train(rcvStreamTrain: ReutersRCVStream) = {
         
     streamOfXMLDocs = rcvStreamTrain.stream
     println(s"Number of documents: ${streamOfXMLDocs.length}")
@@ -165,8 +165,11 @@ class BayesClassifier() {
     println("conditionalWordProbabilities computed")
     
   }
-  
-  def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = { 
+
+  override def classify(stream: ReutersRCVStream) = labelNewDocuments(stream)
+
+
+  def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = {
     amountOfValidationDocs = rcvStreamValidation.stream.length
     validationCounter = 0
     val docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))
