@@ -15,6 +15,7 @@ project/
 .lib/
 dist/*
 target/
+lib/
 lib_managed/
 src_managed/
 project/boot/

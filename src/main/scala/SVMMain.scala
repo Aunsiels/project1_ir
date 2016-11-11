@@ -12,7 +12,8 @@ object SVMMain {
         val sigma = 1.0
         var bestF1 = 0.0
         var currentF1 = 0.0
-        val svm = new SVMOCP(lambda, sizeInput, nClasses)
+        val svm = new SVMPegasos(lambda, sizeInput, nClasses)
+        //val svm = new SVMOCP(lambda, sizeInput, nClasses)
         do {
             bestF1 = currentF1
             svm.train(data.getTrainingData, nTraining, batchSize)
