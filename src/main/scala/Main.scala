@@ -58,30 +58,29 @@ object Main {
 
     log.info(s"Bayes classifier, reading ${files.train}")
 
-    log.info("dummy")
-    val dummyClassifier = new DummyClassifier(files.path)
-    //dummyClassifier.train()
-
-    log.info("Naive Bayes Classifier")
-    val trainings = new RCVStreamSmart(files.train, maxDocs = slice)
-    log.info(s"stream length ${trainings.stream.length}")
-    var mystream = Stream[RCVParseSmart]()
-    mystream = trainings.stream
-    log.info("copied to mystream")
-
     val bayesClassifier = new BayesClassifier()
-    log.info("training")
-    bayesClassifier.train(trainings)
 
-    val validates = new RCVStreamSmart(files.validate, maxDocs = slice / 3)
-    val classes = bayesClassifier.classify(validates)
-    log.info("print classes")
-    classes.foreach(x => println(x._1, x._2))
-    log.info("completed")
+    if (slice > 0) {
+      val trainings = new RCVStreamSmart(files.train, maxDocs = slice)
+      log.info(s"stream length ${trainings.stream.length}")
+      var mystream = Stream[RCVParseSmart]()
+      mystream = trainings.stream
+      log.info("copied to mystream")
 
+      log.info("training")
+      bayesClassifier.train(trainings)
+
+      val validates = new RCVStreamSmart(files.validate, maxDocs = slice / 3)
+      val classes = bayesClassifier.classify(validates)
+      log.info("print classes")
+      classes.foreach(x => println(x._1, x._2))
+      log.info("completed")
+
+      return
+    }
 
     log.info("classifying and evaluating")
-    //bayesClassifier.trainAndEvaluate()
+    bayesClassifier.trainAndEvaluate()
 
   }
 }
