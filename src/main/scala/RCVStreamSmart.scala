@@ -21,11 +21,11 @@ import scala.collection.JavaConversions._
   * @param stemming if true, do Porter stemming. Default false
   */
 class RCVStreamSmart(path: String, ext: String = ".xml",
-                     stopWords: Boolean = false, stemming: Boolean = false)
+                     stopWords: Boolean = false, stemming: Boolean = false, maxDocs: Int = Int.MaxValue)
   extends ReutersRCVStream(path, ext) {
 
   override def stream : Stream[RCVParseSmart/*XMLDocument*/] =
-    unparsed.stream.map(is => new RCVParseSmart(is, stopWords, stemming))
+    unparsed.stream.slice(0, maxDocs).map(is => new RCVParseSmart(is, stopWords, stemming))
 
 }
 

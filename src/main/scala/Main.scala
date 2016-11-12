@@ -5,6 +5,7 @@
 
 import java.time.{Duration, LocalDateTime}
 import java.util.logging.Logger
+import scala.util.Try
 
 
 object Main {
@@ -35,36 +36,49 @@ object Main {
     println("Information Retrieval Project 1")
     println
     println("Test 3 Classifiers")
-    println("arguments: <directory with train, test, and validate subdirectories>")
+    println("arguments: <directory with train, test, and validate subdirectories> [<maxDocs>]")
     println
   }
 
   def main(args: Array[String]): Unit = {
 
     val files =
-      if (args.length > 2) Files(args(1), args(2))
+      if (args.length > 0) Files(args(0))
       else user match {
         case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score2")
         case "Michael"    => Files("CC:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
         case _            => Files("./zips/")
       }
 
+    val slice = if (args.length > 1) args(1).toInt else -1
+
     System.gc
 
     log.info(s"$user, heap-space: ${Timer.freeMB()} of ${Timer.totalMB()}")
-
-    val slice = 10000
 
     log.info(s"Bayes classifier, reading ${files.train}")
 
     log.info("dummy")
     val dummyClassifier = new DummyClassifier(files.path)
-    dummyClassifier.train()
+    //dummyClassifier.train()
 
     log.info("Naive Bayes Classifier")
+    val trainings = new RCVStreamSmart(files.train, maxDocs = slice)
+    log.info(s"stream length ${trainings.stream.length}")
+    var mystream = Stream[RCVParseSmart]()
+    mystream = trainings.stream
+    log.info("copied to mystream")
+
     val bayesClassifier = new BayesClassifier()
     log.info("training")
-    bayesClassifier.train(new RCVStreamSmart(files.test))
+    bayesClassifier.train(trainings)
+
+    val validates = new RCVStreamSmart(files.validate, maxDocs = slice / 3)
+    val classes = bayesClassifier.classify(validates)
+    log.info("print classes")
+    classes.foreach(x => println(x._1, x._2))
+    log.info("completed")
+
 
     log.info("classifying and evaluating")
     //bayesClassifier.trainAndEvaluate()

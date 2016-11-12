@@ -159,10 +159,10 @@ class BayesClassifier(dir: String = "") extends Classifier(dir) {
     
   }
 
-  override def classify(stream: RCVStreamSmart) = labelNewDocuments(stream)
+  override def classify(stream: RCVStreamSmart): Map[String, Set[String]] = labelNewDocuments(stream)
 
 
-  def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = {
+  def labelNewDocuments(rcvStreamValidation : RCVStreamSmart) : Map[String, Set[String]] = {
     amountOfValidationDocs = rcvStreamValidation.stream.length
     validationCounter = 0
     val docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))
