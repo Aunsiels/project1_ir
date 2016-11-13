@@ -23,14 +23,5 @@ Upon running the program, it will
 - *Logistic Regression Classifier*: train and generate the list
 - *SVM*: train and generate the list.
 
-## Preprocessing and Tokenizing
-TODO-Markus
+The project report is under `ir-2016-1-report-11.docx`
 
-## Naive Bayes Classifier
-TODO-Michael, Markus
-
-## Logistic Regression Classifier
-TODO-Michael, Markus
-
-## SVM
-TODO-Julien
