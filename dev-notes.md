@@ -218,4 +218,20 @@ version is set as follows:
       </library>
     </component>
     
+## HighFreq Stemming 
+
+    val HighFreqWords = List(
+        //"share",     // -> 32117,
+        //"bank",      // -> 30300,
+        //"million",   // -> 45624,
+        "would",     // -> 35039,
+        //"percent",   //  -> 53790,
+        "year",      //  -> 40026,
+        //"market",    // -> 35931,
+        "said",      // -> 155872,
+        "new"        // -> 33655
+      )
  
+ This results in:
+ 
+    ArrayBuffer((<stop>,2132110), (<number>,379833), (<HIFREQ>,264592), (percent,53790), (<tumber>,52633), (million,45624), (market,35931), (share,32117), (bank,30300))
