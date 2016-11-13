@@ -13,7 +13,7 @@ Provided is the zip file `project1_group11.zip`. Unzip it:
 This creates the directory `code`. Then run:
 
     $ cd code
-    $ sbt run-main "Main <path-to-zip-folder>
+    $ sbt "run-main Main <path-to-zip-folder>"
     
 The `<path-to-zip-folder>` must contain the directories `train`, `test`, and `validate`.
  
