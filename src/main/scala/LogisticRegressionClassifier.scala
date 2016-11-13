@@ -12,6 +12,9 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
 
   val random = new Random
   
+  var classProbabilities : Map[Int, Double] = _
+  
+  
   def labelNewDocuments(validationData : Array[DataPoint]) : List[Set[Int]] = {
     var validationDataList = validationData.toList
     var labels = validationDataList.map(dataPoint => assignLabels(dataPoint.input))
@@ -33,22 +36,45 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
     labels
   }
   
-  def train(trainingData : Array[DataPoint], iterations : Int, learningRate : Double) = {
+  def trainForImbalancedClasses(trainingData : Array[DataPoint], iterations : Int, learningRate : Double, classes : Set[String]) = {
+    if(classProbabilities == null) {
+      classProbabilities = classes.groupBy(identity).zipWithIndex.map(cat => (cat._2, trainingData.filter(td => td.output.contains(cat._2)).length.toDouble/trainingData.length))
+      println("classprobabilities computed")  
+    }
     for (currentClass <- 0 until nClasses) {
-      if(currentClass % 10 == 0) {
+      if(currentClass % 100 == 0) {
         println(" ... training for class " +  currentClass + " (out of totally " + nClasses + ")")
       }
-      var wCurrClass = DenseVector.zeros[Double](dimInput)
+      var alphaPlus = classProbabilities(currentClass)
+      var alphaMinus = 1 - alphaPlus
       for (t <- 1 to iterations){
         val nextIndex = random.nextInt(trainingData.length)
         val trainingPoint = trainingData(nextIndex)
         val x = trainingPoint.input
         val y = if (trainingPoint.output.contains(currentClass)) 1.0 else 0.0
-        val prediction = logistic(wCurrClass, x)
-        val gradient = learningRate * (y - prediction) * prediction * (1 - prediction) * x
-        wCurrClass += gradient
+        val prediction = logistic(weights(currentClass), x)
+        //val gradient = learningRate  * (if(y == 1) (1-prediction) else (-prediction)) * x
+        val gradient = learningRate  * (if(y == 1) (alphaMinus*(1-prediction)) else ((-1)*alphaPlus*prediction)) * x
+        weights(currentClass) -= gradient
       }
-      weights(currentClass) = wCurrClass
+    }
+  }
+  
+  def train(trainingData : Array[DataPoint], iterations : Int, learningRate : Double) = {
+          
+    for (currentClass <- 0 until nClasses) {
+      if(currentClass % 100 == 0) {
+        println(" ... training for class " +  currentClass + " (out of totally " + nClasses + ")")
+      }
+      for (t <- 1 to iterations){
+        val nextIndex = random.nextInt(trainingData.length)
+        val trainingPoint = trainingData(nextIndex)
+        val x = trainingPoint.input
+        val y = if (trainingPoint.output.contains(currentClass)) 1.0 else 0.0
+        val prediction = logistic(weights(currentClass), x)
+        val gradient = learningRate * (y - prediction) * prediction * (1 - prediction) * x
+        weights(currentClass) -= gradient
+      }
     }
   }
   

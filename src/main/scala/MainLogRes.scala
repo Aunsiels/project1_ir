@@ -6,8 +6,8 @@ import java.time.{Duration, LocalDateTime}
 object MainLogRes {
     def main(args: Array[String]) = {
 
-        println("Loading data")
-        val data = new RCVDataset("C:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
+        /*println("Loading data")
+        val data = new RCVDataset("C:/Users/Michael/Desktop/IR Data/Project 1/allZIPs1/")
 
         val lambda = 0.1
         val nClasses = data.classSet.size
@@ -33,7 +33,33 @@ object MainLogRes {
         var evaluator = new Evaluator()
         val stat =  Evaluation.getStat(chosenLabels, trueLabels, 1.0)
         println("Evaluation Test : " + stat)
-        println("finished")
+        println("finished")*/
+      
+        val data = new RCVDataset("C:/Users/Michael/Desktop/IR Data/Project 1/allZIPs1/")
+        val learningRate = 0.01
+        val nClasses = data.classSet.size
+        val nIteations = 1000
+        val dimInput = data.trainingData(0).input.length
+        val logRegClassifier = new LogisticRegressionClassifier(learningRate, dimInput, nClasses)
 
+        var bestF1 = 0.0
+        var currentF1 = 0.0
+        var counter = 0
+        do {
+            bestF1 = currentF1
+            counter += 1
+            println("round " + counter)
+            println("training")
+            logRegClassifier.train(data.trainingData, nIteations, learningRate)
+            //logRegClassifier.trainForImbalancedClasses(data.trainingData, nIteations, learningRate, data.classSet)
+            println("validation")
+            var chosenLabels = logRegClassifier.labelNewDocuments(data.validationData)
+            val stat = Evaluation.getStat(chosenLabels, data.validationData.map(_.output), 1.0)
+            println(stat)
+            currentF1 = stat.f1
+        } while(currentF1 > bestF1)          
+        var chosenLabels = logRegClassifier.labelNewDocuments(data.validationData)
+        val stat = Evaluation.getStat(chosenLabels, data.validationData.map(_.output), 1.0)
+        println("Evaluation Test : " + stat)
     }
 }
