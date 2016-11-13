@@ -55,7 +55,7 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
         val prediction = logistic(weights(currentClass), x)
         //val gradient = learningRate  * (if(y == 1) (1-prediction) else (-prediction)) * x
         val gradient = learningRate  * (if(y == 1) (alphaMinus*(1-prediction)) else ((-1)*alphaPlus*prediction)) * x
-        weights(currentClass) -= gradient
+        weights(currentClass) += gradient
       }
     }
   }
@@ -73,7 +73,7 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
         val y = if (trainingPoint.output.contains(currentClass)) 1.0 else 0.0
         val prediction = logistic(weights(currentClass), x)
         val gradient = learningRate * (y - prediction) * prediction * (1 - prediction) * x
-        weights(currentClass) -= gradient
+        weights(currentClass) += gradient
       }
     }
   }
