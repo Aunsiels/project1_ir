@@ -8,24 +8,17 @@ import java.io._
 
 object RunBayesClassifier {
   def main(args: Array[String]) = {
-           
-    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/trainingData"
-    val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/1000"
-    //val trainingFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/training/50000"
-    //val trainingFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/train"
-    //val rcvStreamTraining = new ReutersRCVStream(trainingFiles, ".xml")
+
+    val trainingFiles = if (args.length > 0) args(0) + "/train" else "C:/Users/Michael/Desktop/IR Data/Project 1/training/1000"
+    val validationFiles = if (args.length > 0) args(0) + "/validate" else "C:/Users/Michael/Desktop/IR Data/Project 1/validation/100"
+    val testFiles = if (args.length > 0) args(0) + "/test" else "C:/Users/Michael/Desktop/IR Data/Project 1/test/10"
+
     val rcvStreamTraining = new RCVStreamSmart(trainingFiles, stopWords = true, stemming=true)
     println("Number of training documents: " + rcvStreamTraining.length)
     
-    //val validationFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/validate"
-    val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/100"
-    //val validationFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/validation/all"
     val rcvStreamValidation = new RCVStreamSmart(validationFiles, stopWords = true, stemming=true)
-    //val rcvStreamValidation = new ReutersRCVStream(validationFiles, ".xml")
     println("Number of validation documents: " + rcvStreamValidation.length)
 
-     //val testFiles = "/Users/mmgreiner/Projects/InformationRetrieval/data/score2/test"
-     val testFiles = "C:/Users/Michael/Desktop/IR Data/Project 1/test/10"
      val rcvStreamTest = new RCVStreamSmart(testFiles, stopWords = true, stemming=true)
      println("Number of test documents: " + rcvStreamTest.length)
     
@@ -75,13 +68,13 @@ object RunBayesClassifier {
   }
 }
 
-class BayesClassifier() {  
+class BayesClassifier(dir: String = "") extends Classifier(dir) {
   
   var categories : Set[String] = _
   var tokens : Set[String] = _
   var classProbabilities : Map[String, Double] = _
   var conditionalWordProbabilities : Map[String, SmartConditionalWordProbability] = _
-  var streamOfXMLDocs : Stream[XMLDocument] = _
+  var streamOfXMLDocs : Stream[RCVParseSmart] = _
   var termFrequenciesPerDocument : Map[String, Map[String, Int]] = _
   var denominatorsPerCategory : Map[String, Double] = _
   var denominatorsPerNotCategory : Map[String, Double] = _
@@ -96,7 +89,7 @@ class BayesClassifier() {
     * Training using a single Naive Bayes Classifier.
     * @param rcvStreamTrain stream of xml documents
     */
-  def train(rcvStreamTrain: ReutersRCVStream) = {
+  override def train(rcvStreamTrain: RCVStreamSmart) = {
         
     streamOfXMLDocs = rcvStreamTrain.stream
     println(s"Number of documents: ${streamOfXMLDocs.length}")
@@ -165,8 +158,11 @@ class BayesClassifier() {
     println("conditionalWordProbabilities computed")
     
   }
-  
-  def labelNewDocuments(rcvStreamValidation : ReutersRCVStream) : Map[String, Set[String]] = { 
+
+  override def classify(stream: RCVStreamSmart): Map[String, Set[String]] = labelNewDocuments(stream)
+
+
+  def labelNewDocuments(rcvStreamValidation : RCVStreamSmart) : Map[String, Set[String]] = {
     amountOfValidationDocs = rcvStreamValidation.stream.length
     validationCounter = 0
     val docLabels = rcvStreamValidation.stream.groupBy(identity).map(doc => (doc._1.name, assignLabelsToDoc(doc._1.tokens, doc._1.name)))

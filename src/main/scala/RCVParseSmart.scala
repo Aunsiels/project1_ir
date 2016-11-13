@@ -32,6 +32,10 @@ class RCVParseSmart(is: InputStream, reduceStopWords: Boolean = false, stemming:
         t = replace(t, RCVParseSmart.rStop)
       if (stemming)
         t = PorterStemmer.stem(t)
+
+      if (reduceStopWords)
+        t = replace(t, RCVParseSmart.rFreqWords)
+
       t.replaceAll("\\s", " ")
         .split(" ")
     })
@@ -231,6 +235,18 @@ object RCVParseSmart {
   )
   val rStop = Stopwords.mkString("^(", "|", ")$").r -> "<STOP>"
 
+  val HighFreqWords = List(
+    //"share",     // -> 32117,
+    //"bank",      // -> 30300,
+    //"million",   // -> 45624,
+    "would",     // -> 35039,
+    //"percent",   //  -> 53790,
+    "year",      //  -> 40026,
+    //"market",    // -> 35931,
+    "said",      // -> 155872,
+    "new"        // -> 33655
+  )
+  val rFreqWords = HighFreqWords.mkString("^(", "|", ")$").r -> "<HIFREQ>"
 
   def main(args: Array[String]) {
 

@@ -19,11 +19,9 @@ import scala.collection.JavaConversions._
   * @param ext extensions to unzip and consider
   * @param stopWords if true, replace all stop words with <STOP>. Default false
   * @param stemming if true, do Porter stemming. Default false
-  * @param maxDocs maximum documents in stream to consider. Default to all.
   */
 class RCVStreamSmart(path: String, ext: String = ".xml",
-                     stopWords: Boolean = false, stemming: Boolean = false,
-                     maxDocs: Integer = Int.MaxValue)
+                     stopWords: Boolean = false, stemming: Boolean = false, maxDocs: Int = Int.MaxValue)
   extends ReutersRCVStream(path, ext) {
 
   override def stream : Stream[RCVParseSmart/*XMLDocument*/] =

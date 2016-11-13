@@ -5,6 +5,7 @@
 
 import java.time.{Duration, LocalDateTime}
 import java.util.logging.Logger
+import scala.util.Try
 
 
 object Main {
@@ -35,46 +36,51 @@ object Main {
     println("Information Retrieval Project 1")
     println
     println("Test 3 Classifiers")
-    println("arguments: <training-dir> <validation-dir>")
+    println("arguments: <directory with train, test, and validate subdirectories> [<maxDocs>]")
     println
   }
 
   def main(args: Array[String]): Unit = {
 
     val files =
-      if (args.length > 2) Files(args(1), args(2))
+      if (args.length > 0) Files(args(0))
       else user match {
         case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score2")
         case "Michael"    => Files("CC:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
         case _            => Files("./zips/")
       }
 
-    log.info(s"$user, heap-space: ${Timer.freeMB()}")
+    val slice = if (args.length > 1) args(1).toInt else -1
 
-    val slice = 10000
+    System.gc
+
+    log.info(s"$user, heap-space: ${Timer.freeMB()} of ${Timer.totalMB()}")
 
     log.info(s"Bayes classifier, reading ${files.train}")
-    val rcvStreamTraining = new RCVStreamSmart(files.train, stopWords=true, stemming=true, maxDocs=slice)
-    log.info("Number of training documents: " + rcvStreamTraining.stream.length)
 
-    val rcvStreamValidation = new RCVStreamSmart(files.validate, stopWords = true, stemming=true, maxDocs=(slice/2))
+    val bayesClassifier = new BayesClassifier()
 
-    log.info("Number of validation documents: " + rcvStreamValidation.stream.length)
+    if (slice > 0) {
+      val trainings = new RCVStreamSmart(files.train, maxDocs = slice)
+      log.info(s"stream length ${trainings.stream.length}")
+      var mystream = Stream[RCVParseSmart]()
+      mystream = trainings.stream
+      log.info("copied to mystream")
 
-    log.info("training Bayes Classifier")
-    var bayesClassifier = new BayesClassifier()
-    bayesClassifier.train(rcvStreamTraining)
-    log.info("...completed")
+      log.info("training")
+      bayesClassifier.train(trainings)
 
-    log.info("labelling")
-    var chosenLabels = bayesClassifier.labelNewDocuments(rcvStreamValidation)
-    log.info("...completed")
+      val validates = new RCVStreamSmart(files.validate, maxDocs = slice / 3)
+      val classes = bayesClassifier.classify(validates)
+      log.info("print classes")
+      classes.foreach(x => println(x._1, x._2))
+      log.info("completed")
 
-    log.info("evaluating")
-    var evaluator = new Evaluator()
-    var trueLabels = rcvStreamValidation.stream.groupBy(_.name).mapValues(c => c.head.codes.toSet)
-    evaluator.evaluateTextCategorization(chosenLabels, trueLabels)
-    log.info("...completed")
+      return
+    }
+
+    log.info("classifying and evaluating")
+    bayesClassifier.trainAndEvaluate()
 
   }
 }
