@@ -93,9 +93,10 @@ class MainLogRes(dir: String, val nIterations: Int = 10000, val learningRate: Do
         println("Evaluation Test : " + stat)
 
         // convert to standard return Map[String, Set[String]] of doc ID, Set of Labels
+        val testLabels = logRegClassifier.labelNewDocuments(data.testData)
 
         val result = collection.mutable.Map[String, Set[String]]()
-        for ((set, i) <- chosenLabels.zipWithIndex) {
+        for ((set, i) <- testLabels.zipWithIndex) {
             val labelset = set.map(x => data.classIndex(x))
             result += data.testIndex(i).toString -> labelset
         }

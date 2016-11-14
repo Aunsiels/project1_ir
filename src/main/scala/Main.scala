@@ -65,7 +65,8 @@ object Main {
     def WriteToFile(result: Map[String, Set[String]], name: String) = {
       val f = new java.io.PrintWriter(new FileOutputStream(name))
       result.foreach(x => {
-        f.println(x._1, x._2.mkString(" "))
+        val labels = x._2.mkString(" ")
+        f.println(s"${x._1} $labels")
       })
       f.close()
     }
