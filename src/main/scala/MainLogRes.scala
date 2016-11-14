@@ -64,7 +64,7 @@ object MainLogRes {
     }
 }
 
-class MainLogRes(dir: String, val nIterations: Int = 10000, val learningRate = 0.001) extends Classifier(dir) {
+class MainLogRes(dir: String, val nIterations: Int = 10000, val learningRate: Double = 0.001) extends Classifier(dir) {
     val data = new RCVDataset(dir)
     val nClasses = data.classSet.size
     val dimInput = data.trainingData(0).input.length
