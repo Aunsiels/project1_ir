@@ -92,7 +92,7 @@ object Main {
     }
 
     log.info("Logistic Regression")
-    val logreg = new MainLogRes(files.path, nIterations = 10000)
+    val logreg = new MainLogRes(files.path, nIterations = 10000, learningRate = 0.001)
     val logResult = logreg.trainEvaluateClassify()
     var fname = "logres.txt"
     log.info(s"Writing $fname")
