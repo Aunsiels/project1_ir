@@ -25,6 +25,7 @@ abstract class Classifier(val dir:  String = "") {
     val trueCodes =  validateStream.stream.groupBy(_.name).mapValues(c => c.head.codes)
     val stat =  Evaluation.getStat(classifiedCodes.map(doc => doc._2), trueCodes.map(doc => doc._2), 1.0)
     println("Evaluation Test : " + stat)
+
   }
 
   def evaluate(validateDir: String): Unit = classify(new RCVStreamSmart(validateDir, stopWords = true, stemming = true))
@@ -33,9 +34,10 @@ abstract class Classifier(val dir:  String = "") {
 
 
 
-  def trainAndEvaluate(): Unit = {
+  def trainEvaluateClassify(): Map[String, Set[String]] = {
     train()
     evaluate()
+    classify()
   }
 
 

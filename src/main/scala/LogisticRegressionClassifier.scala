@@ -16,10 +16,11 @@ class LogisticRegressionClassifier(lambda : Double, dimInput : Int, nClasses : I
   
   
   def labelNewDocuments(validationData : Array[DataPoint]) : List[Set[Int]] = {
-    var validationDataList = validationData.toList
-    var labels = validationDataList.map(dataPoint => assignLabels(dataPoint.input))
+    val validationDataList = validationData.toList
+    val labels = validationDataList.map(dataPoint => assignLabels(dataPoint.input))
     labels 
   }
+
   
   def assignLabels(x : DenseVector[Double]) : Set[Int] = {
        

@@ -28,6 +28,9 @@ class RCVDataset(path : String) extends Dataset{
     var validationList = validation.stream.toList
     var testList = test.stream.toList
 
+    // map position in list -> document ID
+    val testIndex: Map[Int, String] = testList.zipWithIndex.map(x => x._2 -> x._1.ID.toString).toMap
+
     println("Getting words")
     // Get words counts and classes
     for ((content, codes) <- trainingList){
@@ -49,6 +52,11 @@ class RCVDataset(path : String) extends Dataset{
     for ((c, i) <- classSet.zipWithIndex){
         classMap += (c -> i)
     }
+
+    val classIndex: Map[Int, String] = classMap.map(x => x._2 -> x._1)
+
+    def getClasses(cl: Set[Int]): Set[String] = classMap.filter(x => cl contains x._2).keySet
+
 
     var dictionary = Map[String, Int]()
     for ((c, i) <- wordsCount.keys.zipWithIndex){

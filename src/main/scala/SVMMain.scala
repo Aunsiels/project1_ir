@@ -32,3 +32,55 @@ object SVMMain {
         println("Evaluation Test : " + stat)
     }
 }
+
+class SVMMain(dir: String) extends Classifier(dir) {
+    val data = new RCVDataset(dir)
+    val lambda = 0.01 //0.01 good
+    val sizeInput = data.dictionary.size + 1
+    val nClasses = data.classSet.size
+    val nTraining = 10000
+    val batchSize = 10
+    val sigma = 1.0
+    var bestF1 = 0.0
+    var currentF1 = 0.0
+    val svm = new SVMPegasos(lambda, sizeInput, nClasses)
+
+    override def trainEvaluateClassify(): Map[String, Set[String]] = {
+
+        //val svm = new SVMOCP(lambda, sizeInput, nClasses)
+        do {
+            bestF1 = currentF1
+            svm.train(data.getTrainingData, nTraining, batchSize)
+            val validationData = data.getValidationData
+            val predictions = svm.predict(validationData)
+            val stat = Evaluation.getStat(predictions, validationData.map(_.output), 1.0)
+            println(stat)
+            currentF1 = stat.f1
+        } while(currentF1 > bestF1)
+        val testData = data.getTrainingData
+        val predictions = svm.predict(testData)
+        val stat = Evaluation.getStat(predictions, testData.map(_.output), 1.0)
+        println("Evaluation Test : " + stat)
+
+        val result = collection.mutable.Map[String, Set[String]]()
+        for ((set, i) <- predictions.zipWithIndex) {
+            val labelset = set.map(x => data.classIndex(x))
+            result += data.testIndex(i).toString -> labelset
+        }
+        result.toMap
+
+    }
+
+    override def train(): Unit = {
+        val svm = new SVMPegasos(lambda, sizeInput, nClasses)
+        svm.train(data.getTrainingData, nTraining, batchSize)
+    }
+
+    override def classify(): Map[String, Set[String]] = {
+        val validationData = data.getValidationData
+        val predictions = svm.predict(validationData)
+        Map("not" -> Set("done", "yet"))
+
+    }
+
+}
