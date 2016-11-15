@@ -15,9 +15,9 @@ This creates the directory `project1_group11`, which contains:
 - `tinyir.jar` as part of `lib`
 - `build.sbt` 
 - the directory `labelingtestdocs` which contains the three resulting test results.
-- and this README.md file.
+- and this `README.md` file.
 
-Note: We had continuing conflicts between the tinyir and the breeze libraries. 
+*Note*: We had continuing conflicts between the tinyir and the breeze libraries. 
 This is why we decided to build tinyir for Scala 2.11.5 and provide it as jar.
 
 ## Running
@@ -33,10 +33,11 @@ These options are called:
 
 - `ITERATION=<nof-iterations-integer>`
 - `LEARNING=<learning-rate-double>`
+- `SKIP=(BAYES|LINREG|SVM)+`
 
 It can be run like this:
 
-    $ sbt "run-main <path-to-data-folder> ITERATION=10000 LEARNING=0.001"
+    $ sbt "run-main <path-to-data-folder> ITERATION=10000 LEARNING=0.001 SKIP=BAYES,SVM"
 
 
 ## Results
@@ -46,7 +47,7 @@ Upon running the program, it will
 - *Logistic Regression Classifier*: train and generate the list
 - *SVM*: train and generate the list.
 
-The result files are called `ir-project-2016-1-11-[nb|lr|lsvm].txt`.
+The result files are called `ir-project-2016-1-11-[nb|lr|lsvm].txt` and they are located under `labelingtestdocs`
 
-The project report is under `ir-2016-1-report-11.docx`
+The project report is under `ir-2016-1-report-11.pdf` 
 
