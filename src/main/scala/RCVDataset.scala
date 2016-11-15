@@ -89,10 +89,14 @@ class RCVDataset(path : String) extends Dataset{
     // Test
     println("Building test")
     override val testData: Array[DataPoint] = new Array[DataPoint](testList.length)
+    var testIds = List[Int]()
     for ((doc, i) <- testList.zipWithIndex){
         val tokens = doc.tokens.filter(s => dictionary.contains(s))
+        testIds = doc.ID :: testIds
         testData(i) = new DataPointRCV(tokens, doc.codes.map(c => classMap.getOrElse(c, 0)), dictionary)
     }
+
+    testIds = testIds.reverse
 }
 
 object RCVDataset {
