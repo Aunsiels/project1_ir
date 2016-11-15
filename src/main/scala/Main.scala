@@ -150,7 +150,7 @@ object Main {
       log.info(s"SVM classifier, reading ${files.train}")
       val svmClassifier = new SVMMain(files.path)
       val svmResults = svmClassifier.trainEvaluateClassify()
-      WriteToFile(svmResults, "svm")
+      WriteToFile(svmResults, "lsvm")
       log.info("completed SVM")
     }
 
