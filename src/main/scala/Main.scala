@@ -99,7 +99,7 @@ object Main {
     log.info("Logistic Regression")
     val logreg = new MainLogRes(files.path, nIterations = 10000, learningRate = 0.01)
     val logResult = logreg.trainEvaluateClassify()
-    WriteToFile(logResult, fna"lrme)
+    WriteToFile(logResult, "lr")
       log.info("completed Logistic Regression")
 
 
