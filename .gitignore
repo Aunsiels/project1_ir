@@ -32,12 +32,9 @@ project/plugins/project/
 .idea
 /bin/
 
+# application specific
 src/main/scala/DummyClassifier.scala
+.zip
 
-train-all2.zip
-
-project1_group11.zip
-
-logres,txt
 
 logres.txt

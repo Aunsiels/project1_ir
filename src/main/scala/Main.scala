@@ -39,7 +39,7 @@ object Main {
     println("Information Retrieval Project 1 Group 11")
     println
     println("Test 3 Classifiers")
-    println("arguments: <data-directory> [ITERATIONS=<int>] [LEARNING=<double>] [TEST=<int>]")
+    println("arguments: <data-directory> [ITERATIONS=<int>] [LEARNING=<double>] [TEST=<int>] [SKIP=BAYES,LINREG,SVM]")
     println
   }
 
@@ -79,36 +79,48 @@ object Main {
     val files =
       if (args.length > 0) Files(args(0))
       else user match {
-        case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score3")
+        case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score4")
         case "Michael"    => Files("CC:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
-        case _            => Files("./zips/")
+        case _            => Files("./zips/")   // Julien
       }
 
     var slice = 0
 
+    // default values
     var iterations = 10000
     var learningRate = 0.001
     var skipBayes = false
+    var skipLR = false
+    var skipSVM = false
 
+    // command line parameter patterns
     val iterOption = """I.*=\d+""".r
     val learnOption = """L.*=\d+\.\d+""".r
     val testOption = """T.*=\d+""".r
-    val skipBayesOption = """S.*=Bayes""".r
+    val skipBayesOption = """S.*=.*BAYES.*""".r
+    val skipLROption = """S.*=.*LINREG.*""".r
+    val skipSVMOption = """S.*=.*SVM.*""".r
 
-    args.tail.foreach(a => {
-      val e = a.indexOf("=")
-      a.toUpperCase() match {
-        case iterOption(_*) => iterations = a.slice(e + 1, 100).toInt
-        case learnOption(_*) => learningRate = a.slice(e + 1, 100).toDouble
-        case testOption(_*) => slice = a.slice(e + 1, 100).toInt
-        case skipBayesOption(_*) => skipBayes = true
-        case _ => println(s"argument $a not recognized")
-      }
-    })
+    if (args.length > 1) {
+      args.tail.foreach(a => {
+        val e = a.indexOf("=")
+        a.toUpperCase() match {
+          case iterOption(_*) => iterations = a.slice(e + 1, 100).toInt
+          case learnOption(_*) => learningRate = a.slice(e + 1, 100).toDouble
+          case testOption(_*) => slice = a.slice(e + 1, 100).toInt
+          case skipBayesOption(_*) => skipBayes = true
+          case skipLROption(_*) => skipLR = true
+          case skipSVMOption(_*) => skipSVM = true
+          case _ => println(s"argument $a not recognized")
+        }
+      })
+    }
 
     System.gc
 
     log.info(s"$user, heap-space: ${Timer.freeMB()} of ${Timer.totalMB()}")
+    log.info(s"data-folder=${files.path}, iterations=$iterations, learning rate=$learningRate, skip Bayes=$skipBayes" +
+      s" skip Linear Regression=$skipLR, skip SVM=$skipSVM")
 
 
     // testing only
@@ -126,19 +138,21 @@ object Main {
       log.info("completed Bayes")
     }
 
+    if (! skipLR) {
+      log.info(s"Logistic Regression, reading ${files.train}")
+      val logreg = new MainLogRes(files.path, nIterations = iterations, learningRate = learningRate)
+      val logResult = logreg.trainEvaluateClassify()
+      WriteToFile(logResult, "lr")
+      log.info("completed Logistic Regression")
+    }
 
-    log.info(s"Logistic Regression, reading ${files.train}")
-    val logreg = new MainLogRes(files.path, nIterations = iterations, learningRate = learningRate)
-    val logResult = logreg.trainEvaluateClassify()
-    WriteToFile(logResult, "lr")
-    log.info("completed Logistic Regression")
-
-
-    log.info(s"SVM classifier, reading ${files.train}")
-    val svmClassifier = new SVMMain(files.path)
-    val svmResults = svmClassifier.trainEvaluateClassify()
-    WriteToFile(svmResults, "svm")
-    log.info("completed SVM")
+    if (! skipSVM) {
+      log.info(s"SVM classifier, reading ${files.train}")
+      val svmClassifier = new SVMMain(files.path)
+      val svmResults = svmClassifier.trainEvaluateClassify()
+      WriteToFile(svmResults, "svm")
+      log.info("completed SVM")
+    }
 
   }
 }
