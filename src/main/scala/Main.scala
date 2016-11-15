@@ -63,7 +63,11 @@ object Main {
   def main(args: Array[String]): Unit = {
 
     def WriteToFile(result: Map[String, Set[String]], name: String) = {
-      val f = new java.io.PrintWriter(new FileOutputStream(name))
+      // ir-project-2016-1-[groupid]-[nb|lr|lsvm].txt
+      val fname = s"ir-project-2016-1-11-$name.txt"
+      val f = new java.io.PrintWriter(new FileOutputStream(fname))
+      log.info(s"Writing $fname")
+
       result.foreach(x => {
         val labels = x._2.mkString(" ")
         f.println(s"${x._1} $labels")
@@ -95,9 +99,8 @@ object Main {
     log.info("Logistic Regression")
     val logreg = new MainLogRes(files.path, nIterations = 10000, learningRate = 0.01)
     val logResult = logreg.trainEvaluateClassify()
-    var fname = "logres.txt"
-    log.info(s"Writing $fname")
-    WriteToFile(logResult, fname)
+    WriteToFile(logResult, fna"lrme)
+      log.info("completed Logistic Regression")
 
 
     log.info(s"Bayes classifier, reading ${files.train}")
@@ -105,16 +108,14 @@ object Main {
 
     log.info("classifying and evaluating")
     val bayesResult = bayesClassifier.trainEvaluateClassify()
-    fname = "bayes.txt"
-    log.info(s"Writing $fname")
-    WriteToFile(bayesResult, fname)
+    WriteToFile(bayesResult, "nb")
     log.info("completed Bayes")
 
     log.info(s"SVM classifier, reading ${files.train}")
     val svmClassifier = new SVMMain(files.path)
     val svmResults = svmClassifier.trainEvaluateClassify()
-    fname = "svm.txt"
-    log.info(s"Writing $fname")
-    WriteToFile(svmResults, fname)
+    WriteToFile(svmResults, "svm")
+    log.info("completed SVM")
+
   }
 }
