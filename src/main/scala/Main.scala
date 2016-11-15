@@ -6,6 +6,7 @@
 import java.io.FileOutputStream
 import java.time.{Duration, LocalDateTime}
 import java.util.logging.Logger
+import scala.util.matching.Regex
 
 import scala.util.Try
 
@@ -35,10 +36,10 @@ object Main {
   }
 
   val help = {
-    println("Information Retrieval Project 1")
+    println("Information Retrieval Project 1 Group 11")
     println
     println("Test 3 Classifiers")
-    println("arguments: <directory with train, test, and validate subdirectories> [<maxDocs>]")
+    println("arguments: <data-directory> [ITERATIONS=<int>] [LEARNING=<double>] [TEST=<int>] [SKIP=BAYES,LINREG,SVM]")
     println
   }
 
@@ -60,34 +61,66 @@ object Main {
     log.info("completed")
   }
 
+  def WriteToFile(result: Map[String, Set[String]], name: String) = {
+    // ir-project-2016-1-[groupid]-[nb|lr|lsvm].txt
+    val fname = s"ir-project-2016-1-11-$name.txt"
+    val f = new java.io.PrintWriter(new FileOutputStream(fname))
+    log.info(s"Writing $fname")
+
+    result.toSeq.sortBy(_._1).foreach(x => {
+      val labels = x._2.mkString(" ")
+      f.println(s"${x._1} $labels")
+    })
+    f.close()
+  }
+
   def main(args: Array[String]): Unit = {
-
-    def WriteToFile(result: Map[String, Set[String]], name: String) = {
-      // ir-project-2016-1-[groupid]-[nb|lr|lsvm].txt
-      val fname = s"ir-project-2016-1-11-$name.txt"
-      val f = new java.io.PrintWriter(new FileOutputStream(fname))
-      log.info(s"Writing $fname")
-
-      result.foreach(x => {
-        val labels = x._2.mkString(" ")
-        f.println(s"${x._1} $labels")
-      })
-      f.close()
-    }
 
     val files =
       if (args.length > 0) Files(args(0))
       else user match {
-        case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score3")
+        case "mmgreiner"  =>  Files("/Users/mmgreiner/Projects/InformationRetrieval/data/score4")
         case "Michael"    => Files("CC:/Users/Michael/Desktop/IR Data/Project 1/allZIPs3/")
-        case _            => Files("./zips/")
+        case _            => Files("./zips/")   // Julien
       }
 
-    val slice = if (args.length > 1) args(1).toInt else -1
+    var slice = 0
+
+    // default values
+    var iterations = 10000
+    var learningRate = 0.001
+    var skipBayes = false
+    var skipLR = false
+    var skipSVM = false
+
+    // command line parameter patterns
+    val iterOption = """I.*=\d+""".r
+    val learnOption = """L.*=\d+\.\d+""".r
+    val testOption = """T.*=\d+""".r
+    val skipBayesOption = """S.*=.*BAYES.*""".r
+    val skipLROption = """S.*=.*LINREG.*""".r
+    val skipSVMOption = """S.*=.*SVM.*""".r
+
+    if (args.length > 1) {
+      args.tail.foreach(a => {
+        val e = a.indexOf("=")
+        a.toUpperCase() match {
+          case iterOption(_*) => iterations = a.slice(e + 1, 100).toInt
+          case learnOption(_*) => learningRate = a.slice(e + 1, 100).toDouble
+          case testOption(_*) => slice = a.slice(e + 1, 100).toInt
+          case skipBayesOption(_*) => skipBayes = true
+          case skipLROption(_*) => skipLR = true
+          case skipSVMOption(_*) => skipSVM = true
+          case _ => println(s"argument $a not recognized")
+        }
+      })
+    }
 
     System.gc
 
     log.info(s"$user, heap-space: ${Timer.freeMB()} of ${Timer.totalMB()}")
+    log.info(s"data-folder=${files.path}, iterations=$iterations, learning rate=$learningRate, skip Bayes=$skipBayes" +
+      s" skip Linear Regression=$skipLR, skip SVM=$skipSVM")
 
 
     // testing only
@@ -96,26 +129,30 @@ object Main {
       return
     }
 
-    log.info("Logistic Regression")
-    val logreg = new MainLogRes(files.path, nIterations = 10000, learningRate = 0.01)
-    val logResult = logreg.trainEvaluateClassify()
-    WriteToFile(logResult, "lr")
+    if (! skipBayes) {
+      log.info(s"Bayes classifier, reading ${files.train}")
+      val bayesClassifier = new BayesClassifier(files.path)
+      log.info("classifying and evaluating")
+      val bayesResult = bayesClassifier.trainEvaluateClassify()
+      WriteToFile(bayesResult, "nb")
+      log.info("completed Bayes")
+    }
+
+    if (! skipLR) {
+      log.info(s"Logistic Regression, reading ${files.train}")
+      val logreg = new MainLogRes(files.path, nIterations = iterations, learningRate = learningRate)
+      val logResult = logreg.trainEvaluateClassify()
+      WriteToFile(logResult, "lr")
       log.info("completed Logistic Regression")
+    }
 
-
-    log.info(s"Bayes classifier, reading ${files.train}")
-    val bayesClassifier = new BayesClassifier(files.path)
-
-    log.info("classifying and evaluating")
-    val bayesResult = bayesClassifier.trainEvaluateClassify()
-    WriteToFile(bayesResult, "nb")
-    log.info("completed Bayes")
-
-    log.info(s"SVM classifier, reading ${files.train}")
-    val svmClassifier = new SVMMain(files.path)
-    val svmResults = svmClassifier.trainEvaluateClassify()
-    WriteToFile(svmResults, "svm")
-    log.info("completed SVM")
+    if (! skipSVM) {
+      log.info(s"SVM classifier, reading ${files.train}")
+      val svmClassifier = new SVMMain(files.path)
+      val svmResults = svmClassifier.trainEvaluateClassify()
+      WriteToFile(svmResults, "lsvm")
+      log.info("completed SVM")
+    }
 
   }
 }
