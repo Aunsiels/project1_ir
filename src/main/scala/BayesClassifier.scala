@@ -46,7 +46,7 @@ object RunBayesClassifier {
     endTime = LocalDateTime.now()
     duration = Duration.between(startTime, endTime)
     println("Time needed for Labeling of test Docs: " + duration)
-    val file = new File("C:/Users/Michael/Desktop/result_bayes.txt")
+    val file = new File("C:/Users/Michael/Desktop/ir-2016-1-project-11-nb.txt")
     val bw = new BufferedWriter(new FileWriter(file))
     for(docLabel <- chosenLabels) {
       var outputString = docLabel._1 + " "
